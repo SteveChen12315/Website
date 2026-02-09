@@ -1,0 +1,5 @@
+1 $$$ Good Job！
+2 $$$ Hello World!
+3 $$$ Good Job!
+4 $$$ Wow!
+5 $$$ Amazing!

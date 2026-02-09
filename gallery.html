@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Chen | Gallery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 这里保留之前所有的 CSS 样式，保持一致性 */
+        :root { --accent-color: #00d2ff; }
+        body { background: #000; color: #fff; font-family: 'Inter', 'PingFang SC', sans-serif; margin: 0; overflow-x: hidden; }
+        .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80'); background-size: cover; z-index: -1; }
+        header { position: fixed; top: 0; width: 100%; padding: 1.5rem 3rem; z-index: 1000; background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .main-content { padding-top: 130px; }
+        .topic-row { margin-bottom: 100px; }
+        .topic-title { padding-left: 3rem; font-size: 2.8rem; color: var(--accent-color); font-weight: 900; margin-bottom: 25px; letter-spacing: 6px; text-transform: uppercase; }
+        .scroll-container { display: flex; overflow-x: auto; white-space: nowrap; padding: 20px 0; scrollbar-width: none; cursor: grab; position: relative; }
+        .scroll-container::-webkit-scrollbar { display: none; }
+        .photo-card { flex: 0 0 420px; margin-left: 2.5rem; background: rgba(255,255,255,0.03); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: inline-block; vertical-align: top; }
+        .photo-card:hover { transform: translateY(-20px) scale(1.02); border-color: var(--accent-color); background: rgba(255,255,255,0.08); box-shadow: 0 10px 40px rgba(0, 210, 255, 0.15); }
+        .photo-card img { width: 100%; height: 300px; object-fit: cover; display: block; }
+        .photo-info { padding: 25px; white-space: normal; }
+        .photo-name { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #fff; }
+        .photo-desc { font-size: 0.95rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="bg-fixed"></div>
+    <header>
+        <a href="index.html" style="font-size: 1.6rem; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: 5px;">CHEN</a>
+        <a href="index.html" style="color:#fff; text-decoration:none; opacity:0.8; font-size: 0.9rem;">BACK HOME</a>
+    </header>
+
+    <div class="main-content" id="gallery-root"></div>
+
+    <script src="gallery_data.js"></script>
+
+    <script>
+        const root = document.getElementById('gallery-root');
+
+        // 如果 gallery_data.js 加载成功
+        if (typeof galleryData !== 'undefined') {
+            galleryData.forEach((topic, idx) => {
+                const cleanTitle = topic.folder.includes('_') ? topic.folder.split('_')[1] : topic.folder;
+                const row = document.createElement('div');
+                row.className = 'topic-row';
+                
+                const lines = topic.content.trim().split('\n');
+                let cardsHTML = '';
+                
+                lines.forEach(line => {
+                    const parts = line.split(' $$$ ');
+                    if (parts.length < 1 || !parts[0].trim()) return;
+                    
+                    const rawName = parts[0].trim();
+                    const desc = parts[1] ? parts[1].trim() : "";
+                    const imgSrc = rawName.includes('.') ? rawName : rawName + ".png";
+
+                    cardsHTML += `
+                        <div class="photo-card">
+                            <img src="Gallery/${topic.folder}/${imgSrc}" onerror="this.src='https://via.placeholder.com/420x300?text=Image+Missing'">
+                            <div class="photo-info">
+                                <div class="photo-name">${rawName}</div>
+                                <div class="photo-desc">${desc}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                row.innerHTML = `
+                    <div class="topic-title">${cleanTitle}</div>
+                    <div class="scroll-container" id="scroller-${idx}">${cardsHTML}${cardsHTML}</div>
+                `;
+                root.appendChild(row);
+
+                // 启动滚动引擎
+                const container = document.getElementById(`scroller-${idx}`);
+                let isHover = false;
+                container.onmouseenter = () => isHover = true;
+                container.onmouseleave = () => isHover = false;
+
+                function animate() {
+                    if(!isHover) {
+                        container.scrollLeft += 1;
+                        if(container.scrollLeft >= container.scrollWidth / 2) container.scrollLeft = 0;
+                    }
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            });
+        }
+    </script>
+</body>
+</html>

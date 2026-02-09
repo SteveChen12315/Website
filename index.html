@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chen | 个人主页</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ffffff;
+            --accent-color: #00d2ff;
+            --overlay: rgba(0, 0, 0, 0.4); 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'PingFang SC', sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000;
+            color: var(--primary-color);
+            overflow-x: hidden;
+            height: 100vh;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+        }
+
+        section {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-section {
+            background: linear-gradient(var(--overlay), var(--overlay)), 
+                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 3rem;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logo-icon {
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; }
+
+        .nav-links { display: flex; list-style: none; gap: 3rem; }
+        .nav-links a { color: rgba(255, 255, 255, 0.8); text-decoration: none; font-weight: 500; transition: 0.3s; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--accent-color); }
+
+        .dropdown { position: relative; padding-bottom: 30px; margin-bottom: -30px; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            min-width: 180px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .dropdown:hover .dropdown-content { display: block; animation: dropdownFade 0.2s ease-out; }
+
+        @keyframes dropdownFade { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        .hero-container {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+            z-index: 2;
+        }
+
+        .left-group {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .avatar-wrapper { position: relative; width: 210px; height: 210px; cursor: pointer; }
+        .avatar-outline { position: absolute; inset: -8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; transition: 0.5s; }
+        .avatar-main { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff; overflow: hidden; position: relative; transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1); z-index: 2; }
+        .face { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity 0.3s ease; }
+        .face-png { background-image: url('index/tx.png'); opacity: 1; }
+        .face-gif { background-image: url('index/tx.gif'); opacity: 0; }
+
+        .show-gif .face-png { opacity: 0; }
+        .show-gif .face-gif { opacity: 1; }
+
+        .title-group h1 { font-size: 5rem; font-weight: 900; letter-spacing: 8px; line-height: 1.1; }
+        .title-group .slogan { font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 3px; color: rgba(255, 255, 255, 0.8); white-space: nowrap; }
+
+        .divider-line {
+            width: 4px;
+            height: 160px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+
+        .right-group {
+            max-width: 450px;
+        }
+
+        .bio-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .contact-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 2.5rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            color: #fff;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .contact-box:hover { background: #fff; color: #000; transform: translateY(-5px); }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            z-index: 10;
+        }
+        .scroll-indicator i {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.4);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        .content-section { background: #080808; padding: 0 10%; display: flex; gap: 5rem; align-items: center; }
+        .content-image { flex: 1; height: 60vh; background: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .content-text { flex: 1; }
+        .content-text h2 { font-size: 3rem; margin-bottom: 2rem; color: var(--accent-color); letter-spacing: 4px; }
+        .content-text p { font-size: 1.1rem; line-height: 2; color: rgba(255, 255, 255, 0.7); }
+
+        .footer-tags { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: center; gap: 4rem; font-size: 0.75rem; color: rgba(255, 255, 255, 0.3); }
+
+        @media (max-width: 900px) {
+            .hero-container { flex-direction: column; text-align: center; gap: 2rem; }
+            .left-group { flex-direction: column; gap: 1rem; }
+            .divider-line { width: 80px; height: 4px; }
+            .right-group { display: flex; flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo-box">
+                <div class="logo-icon"><i class="fas fa-dna"></i></div>
+                <span class="logo">CHEN</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">项目库 <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i></a>
+                    <div class="dropdown-content">
+                        <a href="gallery.html" style="padding: 1rem 1.5rem; display: block; color: white; text-decoration: none;">Gallery 画廊</a>
+                        <a href="plan.html" style="padding: 1rem 1.5rem; display: block; color: white; text-decoration: none;">Plan 计划</a>
+                    </div>
+                </li>
+                <li><a href="mailto:chen_mj1224@163.com">联系站长</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero-section" id="top">
+        <div class="hero-container">
+            <div class="left-group">
+                <div class="avatar-wrapper" id="avatarTrigger">
+                    <div class="avatar-outline"></div>
+                    <div class="avatar-main">
+                        <div class="face face-png"></div>
+                        <div class="face face-gif"></div>
+                    </div>
+                </div>
+                <div class="title-group">
+                    <h1>CHEN</h1>
+                    <p class="slogan">探索科技 · 创造价值 · 记录生活</p>
+                </div>
+            </div>
+
+            <div class="divider-line"></div>
+            
+            <div class="right-group">
+                <p class="bio-text">
+                    BIO-TECH / AI ARCHITECT<br><br>
+                    深耕生信多组学分析与 AI 架构设计。致力于利用前沿计算技术解析生命密码，在数字化浪潮中构建生物技术的智能未来。
+                </p>
+                <a href="mailto:chen_mj1224@163.com" class="contact-box">
+                    <i class="far fa-envelope"></i><span>联系站长</span>
+                </a>
+            </div>
+        </div>
+
+        <a href="#more" class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </a>
+    </section>
+
+    <section class="content-section" id="more">
+        <div class="content-image"></div>
+        <div class="content-text">
+            <h2>全栈计算生物学</h2>
+            <p>
+                基于 Python 与 R 的高度自动化分析工作流，深度集成单细胞测序、空间组学及蛋白质组学数据处理方案。
+                通过视觉化呈现复杂生物网络，赋予枯燥数据以直观的生命力。
+            </p>
+        </div>
+
+        <div class="footer-tags">
+            <span><i class="fas fa-dna"></i> SCANPY SUPPORTED</span>
+            <span><i class="fas fa-brain"></i> POWERED BY GOOGLE GEMINI</span>
+            <span>EST. 2026</span>
+        </div>
+    </section>
+
+    <script>
+        // 头像逻辑：强制播放完 GIF 周期
+        const avatar = document.getElementById('avatarTrigger');
+        const gifDuration = 2000; // 在这里设置你 GIF 的完整时长（毫秒）
+        
+        let startTime = 0;
+        let timeoutId = null;
+        let isInside = false; // 记录鼠标当前是否在头像内
+
+        avatar.addEventListener('mouseenter', () => {
+            isInside = true;
+            // 如果已经在播放，不重复触发 startTime
+            if (avatar.classList.contains('show-gif')) return;
+
+            startTime = Date.now();
+            avatar.classList.add('show-gif');
+        });
+
+        avatar.addEventListener('mouseleave', () => {
+            isInside = false;
+            
+            // 计算当前距离播放完一整个周期还剩多久
+            const now = Date.now();
+            const elapsed = now - startTime;
+            const remainingTime = gifDuration - (elapsed % gifDuration);
+
+            // 清除旧的定时器，重新设定
+            if (timeoutId) clearTimeout(timeoutId);
+
+            timeoutId = setTimeout(() => {
+                // 如果时间到了，但用户鼠标又移回来了，则不切回 PNG，继续播放下一个周期
+                if (!isInside) {
+                    avatar.classList.remove('show-gif');
+                }
+                timeoutId = null;
+            }, remainingTime);
+        });
+
+        document.querySelector('.scroll-indicator').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('#more').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

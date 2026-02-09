@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Chen | Plan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --accent-color: #00d2ff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #000; color: white; min-height: 100vh; }
+        
+        .bg-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; z-index: -1;
+        }
+
+        header {
+            position: fixed; top: 0; width: 100%; padding: 1.5rem 0; z-index: 1000;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 3rem; }
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 4px; }
+
+        .container { max-width: 800px; margin: 150px auto 50px; padding: 0 2rem; }
+        
+        .plan-item {
+            background: rgba(255,255,255,0.05); padding: 2rem; border-left: 4px solid var(--accent-color);
+            margin-bottom: 20px; border-radius: 0 15px 15px 0; backdrop-filter: blur(5px);
+        }
+
+        .plan-item h3 { color: var(--accent-color); margin-bottom: 10px; }
+        .plan-item p { opacity: 0.8; line-height: 1.6; }
+
+        .footer-tags { position: fixed; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 4rem; font-size: 0.75rem; opacity: 0.4; }
+    </style>
+</head>
+<body>
+    <div class="bg-fixed"></div>
+    <header>
+        <nav>
+            <div style="display:flex;align-items:center;gap:15px;">
+                <span style="color:var(--accent-color);font-size:1.4rem;"><i class="fas fa-dna"></i></span>
+                <span class="logo">CHEN</span>
+            </div>
+            <a href="index.html" style="color:white;text-decoration:none;opacity:0.7;">返回首页</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="plan-item">
+            <h3>2026 Q1: 生信平台升级</h3>
+            <p>集成更先进的单细胞轨迹推断算法，优化后端响应速度。</p>
+        </div>
+        <div class="plan-item">
+            <h3>2026 Q2: AI 代理集成</h3>
+            <p>将 Gemini 1.5 Pro 深度嵌入工作流，实现全自动报告撰写。</p>
+        </div>
+    </div>
+    <div class="footer-tags">
+        <span>SCANPY SUPPORTED</span><span>POWERED BY GEMINI</span>
+    </div>
+</body>
+</html>
