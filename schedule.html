@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>实验室日程 | 云端同步</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <script>
+        const SUPABASE_URL = '你的URL';
+        const SUPABASE_KEY = '你的Key';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const user = JSON.parse(localStorage.getItem('lab_user'));
+
+        async function loadEvents() {
+            // 从云端获取所有日程
+            const { data } = await supabase.from('lab_events').select('*');
+            if (data) render(data);
+        }
+
+        async function saveEvent() {
+            const title = document.getElementById('eventTitle').value;
+            // 插入云端
+            await supabase.from('lab_events').insert([
+                { date: activeDate, title: title, owner: user.username }
+            ]);
+            closeModal();
+            loadEvents();
+        }
+
+        async function deleteEvent(id) {
+            // 从云端删除
+            await supabase.from('lab_events').delete().eq('id', id);
+            loadEvents();
+        }
+
+        loadEvents();
+    </script>
+</body>
+</html>
