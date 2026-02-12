@@ -2,233 +2,126 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | 实验室管理平台</title>
+    <title>Chuan|Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary: #00d2ff;
-            --bg: #050505;
-            --card-bg: rgba(255, 255, 255, 0.05);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
-
-        body {
-            background: var(--bg);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            overflow: hidden;
-        }
-
-        /* 背景光晕装饰 */
-        .bg-glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.08) 0%, transparent 70%);
-            z-index: 0;
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 3rem;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            max-width: 400px;
-            z-index: 1;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            text-align: center;
-        }
-
-        .header i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
-        .header h1 { font-size: 1.8rem; letter-spacing: 3px; margin-bottom: 0.5rem; }
-        .header p { color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-bottom: 2rem; }
-
-        .input-group { margin-bottom: 1.2rem; position: relative; }
-        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); }
-        
-        input {
-            width: 100%;
-            padding: 14px 15px 14px 45px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-            font-size: 1rem;
-        }
-
-        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.05); box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); }
-
-        .btn-box { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            transition: 0.3s;
-            letter-spacing: 1px;
-            font-size: 1rem;
-        }
-
-        .primary-btn { background: var(--primary); color: #000; }
-        .primary-btn:hover { background: #fff; transform: translateY(-2px); }
-
-        .secondary-btn { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; }
-        .secondary-btn:hover { background: rgba(255,255,255,0.1); }
-
-        #msg { 
-            margin-top: 1.5rem; 
-            font-size: 0.9rem; 
-            min-height: 1.2rem; 
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-        .msg-error { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; display: block !important; }
-        .msg-success { background: rgba(0, 255, 136, 0.1); color: #00ff88; display: block !important; }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 2rem;
-            color: rgba(255,255,255,0.3);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: 0.3s;
-        }
-        .back-link:hover { color: var(--primary); }
+        :root { --primary: #00d2ff; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: 'PingFang SC', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: rgba(255,255,255,0.05); padding: 2.5rem; border-radius: 20px; width: 380px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        h2 { text-align: center; letter-spacing: 3px; color: var(--primary); margin-bottom: 2rem; }
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group i { position: absolute; left: 12px; top: 15px; color: #555; }
+        input { width: 100%; padding: 12px 12px 12px 35px; background: #111; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 8px rgba(0, 210, 255, 0.2); }
+        button { width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.3s; }
+        .btn-reg { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-reg:hover { background: rgba(0, 210, 255, 0.1); }
+        .btn-login { background: var(--primary); color: #000; }
+        .btn-login:hover { filter: brightness(1.1); }
+        #msg { font-size: 0.8rem; margin-top: 15px; text-align: center; min-height: 1.2em; color: #ff4d4d; }
     </style>
 </head>
 <body>
-
-    <div class="bg-glow"></div>
-
-    <div class="login-card">
-        <div class="header">
-            <i class="fas fa-atom"></i>
-            <h1>LAB SYSTEM</h1>
-            <p>云端实验管理平台 v2.0</p>
-        </div>
-
+    <div class="card">
+        <h2>LAB LOGIN</h2>
+        
         <div class="input-group">
             <i class="fas fa-user"></i>
-            <input type="text" id="username" placeholder="用户名 (Username)" autocomplete="off">
+            <input type="text" id="username" placeholder="用户名">
+        </div>
+        
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" placeholder="密码">
         </div>
 
         <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="password" placeholder="密码 (Password)">
+            <i class="fas fa-key"></i>
+            <input type="password" id="adminCheck" placeholder="管理员秘钥 (选填)">
         </div>
 
         <div id="msg"></div>
-
-        <div class="btn-box">
-            <button class="primary-btn" onclick="handleLogin()">登 录</button>
-            <button class="secondary-btn" onclick="handleSignUp()">注 册 账 号</button>
-        </div>
-
-        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回门户首页</a>
+        
+        <button class="btn-login" onclick="handleLogin()">登 录</button>
+        <button class="btn-reg" onclick="handleSignUp()">新用户注册</button>
     </div>
 
     <script>
-        // --- 1. 配置信息 (已更新为你的新项目) ---
-        const SUPABASE_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T';
-        
-        // 初始化客户端
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
+        const SB_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        const msgDiv = document.getElementById('msg');
-
-        function showMessage(text, isError = false) {
-            msgDiv.innerText = text;
-            msgDiv.className = isError ? 'msg-error' : 'msg-success';
+        // 提示信息美化
+        function showMsg(m, isSuccess = false) {
+            const el = document.getElementById('msg');
+            el.innerText = m;
+            el.style.color = isSuccess ? "#00ff88" : "#ff4d4d";
         }
 
-        // --- 2. 注册逻辑 ---
         async function handleSignUp() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value.trim();
+            
+            if(!user || !pass) return showMsg("请填写用户名和密码");
 
-            if(!user || !pass) {
-                showMessage("请输入完整的账号密码", true);
-                return;
-            }
+            // 注册一律设为普通用户
+            const { data: exist } = await _supabase.from('profiles').select('*').eq('username', user).maybeSingle();
+            if(exist) return showMsg("用户名已存在");
 
-            showMessage("正在同步云端数据...");
+            const { error } = await _supabase.from('profiles').insert([
+                { username: user, password: pass, role: 'user' }
+            ]);
 
-            // 向 profiles 表插入数据
-            const { data, error } = await _supabase
-                .from('profiles')
-                .insert([{ username: user, password: pass }]);
-
-            if (error) {
-                console.error("注册报错:", error);
-                // 常见错误处理：如果报错 503，通常是网关没开或表没建好
-                if(error.message.includes('503')) {
-                    showMessage("服务器初始化中，请等 1 分钟再试", true);
-                } else {
-                    showMessage("注册失败: " + error.message, true);
-                }
-            } else {
-                showMessage("注册成功！现在可以点击登录了");
-            }
+            if(!error) showMsg("注册成功！请直接登录", true);
+            else showMsg("错误：" + error.message);
         }
 
-        // --- 3. 登录逻辑 ---
         async function handleLogin() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value.trim();
+            const inputSecret = document.getElementById('adminCheck').value.trim();
 
-            if(!user || !pass) {
-                showMessage("请输入账号密码", true);
-                return;
-            }
+            if(!user || !pass) return showMsg("请填写完整信息");
 
-            showMessage("身份验证中...");
-
-            // 查询匹配的账号密码
-            const { data, error } = await _supabase
-                .from('profiles')
+            // 1. 验证基础账号密码
+            const { data, error } = await _supabase.from('profiles')
                 .select('*')
                 .eq('username', user)
-                .eq('password', pass);
+                .eq('password', pass)
+                .maybeSingle();
 
-            if (error) {
-                showMessage("登录异常: " + error.message, true);
-                return;
+            if(error || !data) {
+                return showMsg("账号或密码错误");
             }
 
-            if (data && data.length > 0) {
-                showMessage("登录成功！正在跳转...");
-                // 存储登录状态到本地缓存
-                localStorage.setItem('lab_user', JSON.stringify(data[0]));
-                
-                // 延迟跳转，给用户看一眼成功提示
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 800);
-            } else {
-                showMessage("用户名或密码不正确", true);
+            let loginUser = { ...data };
+
+            // 2. 如果填写了管理员秘钥，进行后端比对
+            if(inputSecret) {
+                const { data: config } = await _supabase
+                    .from('system_config')
+                    .select('config_value')
+                    .eq('config_key', 'admin_secret_key')
+                    .maybeSingle();
+
+                // 秘钥匹配成功
+                if(config && inputSecret === config.config_value) {
+                    // 动态更新身份（这样 index 页面就会识别你是 Admin）
+                    loginUser.username = "Chen_Mj_Admin"; 
+                    loginUser.role = "admin";
+                    showMsg("管理员身份验证成功...", true);
+                } else {
+                    return showMsg("管理员秘钥错误");
+                }
             }
+
+            // 存储并跳转
+            localStorage.setItem('lab_user', JSON.stringify(loginUser));
+            setTimeout(() => {
+                location.href = 'index.html';
+            }, 800);
         }
-
-        // 支持回车键登录
-        document.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') handleLogin();
-        });
     </script>
 </body>
 </html>

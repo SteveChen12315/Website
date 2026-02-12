@@ -2,39 +2,360 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>实验室日程 | 云端同步</title>
+    <title>Chuan|Schedule</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #00d2ff; --bg: #0a0a0a; --card: #151515; --border: #333; --text: #eee; }
+        * { box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'PingFang SC', -apple-system, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        /* 极简自定义滚动条：白色半透明细圆角 */
+        #sideList::-webkit-scrollbar, 
+        .main-scroll-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        #sideList::-webkit-scrollbar-track, 
+        .main-scroll-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #sideList::-webkit-scrollbar-thumb, 
+        .main-scroll-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        #sideList::-webkit-scrollbar-thumb:hover, 
+        .main-scroll-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .main-view { flex: 1; display: flex; flex-direction: column; padding: 20px; min-width: 0; }
+        .side-panel { width: 380px; background: var(--card); border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+        
+        .toolbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            background: var(--card); 
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            flex-shrink: 0;
+        }
+        .user-tag { color: var(--primary); font-weight: bold; font-size: 0.9rem; }
+
+        #mainDisplay { 
+            flex: 1; 
+            background: var(--card); 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+        .main-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cal-header { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            background: #111; 
+            border-bottom: 1px solid var(--border); 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header-cell { padding: 12px; text-align: center; font-size: 0.8rem; color: #777; font-weight: bold; }
+        
+        .cal-grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            flex: 1;
+        }
+        .day-cell { 
+            border-right: 1px solid var(--border); 
+            border-bottom: 1px solid var(--border); 
+            padding: 8px; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 120px; 
+            transition: 0.2s; 
+        }
+        .day-cell:hover { background: #1c1c1c; }
+        .day-num { font-size: 0.8rem; margin-bottom: 6px; color: #555; }
+        .is-today { background: rgba(0, 210, 255, 0.05); }
+        .is-today .day-num { color: var(--primary); font-weight: bold; }
+
+        .event-item { 
+            font-size: 0.7rem; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            margin-bottom: 4px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            border-left: 3px solid rgba(255,255,255,0.3); 
+            color: #fff; 
+        }
+        .event-item b { opacity: 0.8; margin-right: 4px; font-weight: 500; }
+
+        .side-title { font-size: 1.1rem; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        #sideList { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .task-card { 
+            background: #1a1a1a; 
+            padding: 16px; 
+            border-radius: 10px; 
+            margin-bottom: 15px; 
+            position: relative; 
+            border: 1px solid #222; 
+        }
+        .task-card h4 { margin: 0 0 8px 0; font-size: 0.95rem; color: #fff; }
+        .task-card p { margin: 0; font-size: 0.75rem; color: #888; font-family: monospace; }
+        .edit-icon { position: absolute; right: 15px; top: 15px; color: var(--primary); cursor: pointer; opacity: 0.5; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: none; backdrop-filter: blur(8px); }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #181818; padding: 30px; border-radius: 16px; width: 420px; z-index: 101; display: none; border: 1px solid #333; }
+        input, select { width: 100%; padding: 12px; margin-top: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; outline: none; }
+        .btn-save { background: var(--primary); color: #000; width: 100%; margin-top: 25px; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .read-only-info { color: #888; margin-bottom: 15px; font-size: 0.85rem; padding: 10px; background: #222; border-radius: 6px; }
+    </style>
 </head>
 <body>
-    <script>
-        const SUPABASE_URL = '你的URL';
-        const SUPABASE_KEY = '你的Key';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const user = JSON.parse(localStorage.getItem('lab_user'));
 
-        async function loadEvents() {
-            // 从云端获取所有日程
-            const { data } = await supabase.from('lab_events').select('*');
-            if (data) render(data);
+<div class="main-view">
+    <div class="toolbar">
+        <div class="user-tag" id="userDisplay">游客模式（仅可见 Admin 日程）</div>
+        <div style="display:flex; align-items:center; gap:25px;">
+            <button onclick="moveDate(-1)" style="background:none; border:none; color:#666; cursor:pointer; font-size:1.4rem;"><i class="fas fa-caret-left"></i></button>
+            <h2 id="currentTitle" style="margin:0; min-width:180px; text-align:center; font-size:1.3rem;">2026年 2月</h2>
+            <button onclick="moveDate(1)" style="background:none; border:none; color:#666; cursor:pointer; font-size:1.4rem;"><i class="fas fa-caret-right"></i></button>
+        </div>
+        <button class="btn-save" onclick="handleAuth()" id="authBtn" style="margin:0; width:auto; padding:8px 25px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid #333;">登录</button>
+    </div>
+    
+    <div id="mainDisplay">
+        <div class="main-scroll-area">
+            <div class="cal-header"></div>
+            <div class="cal-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="side-panel">
+    <div class="side-title"><i class="fas fa-stream"></i> 个人日程清单</div>
+    <div id="sideList"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+    <h3 id="modalTitle" style="margin-top:0; color:var(--primary);">日程详情</h3>
+    <div id="readOnlyMeta"></div>
+    <input type="text" id="eventContent" placeholder="在此输入日程内容...">
+    <input type="date" id="eventDate">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <select id="startTime"></select>
+        <select id="endTime"></select>
+    </div>
+    <button id="saveBtn" class="btn-save" onclick="saveEvent()">保存日程</button>
+    <button id="delBtn" class="btn-save" style="background:#3d1a1a; color:#ff6b6b; margin-top:12px; display:none;" onclick="deleteEvent()">删除该日程</button>
+    <button class="btn-save" style="background:#222; color:#888; margin-top:12px;" onclick="closeModal()">取消</button>
+</div>
+
+<script>
+    const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
+    const SB_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    const user = JSON.parse(localStorage.getItem('lab_user'));
+    const ADMIN_NAME = 'Chen_Mj_Admin';
+
+    let focusDate = new Date();
+    let events = [];
+    let activeId = null;
+
+    function cleanTime(str) {
+        if (!str) return "";
+        const t = str.includes('T') ? str.split('T')[1] : str;
+        return t.substring(0, 5);
+    }
+
+    function formatSideTime(startFull, endFull) {
+        if(!startFull) return "";
+        const datePart = startFull.split('T')[0];
+        return `${datePart} ${cleanTime(startFull)} - ${cleanTime(endFull)}`;
+    }
+
+    function stringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return `hsla(${Math.abs(hash % 360)}, 70%, 50%, 0.35)`;
+    }
+
+    function getLocalDateStr(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    async function init() {
+        if(user) {
+            document.getElementById('userDisplay').innerText = `用户: ${user.username}`;
+            document.getElementById('authBtn').innerText = "退出登录";
         }
+        fillTimeDropdowns();
+        await loadEvents();
+        render();
+    }
 
-        async function saveEvent() {
-            const title = document.getElementById('eventTitle').value;
-            // 插入云端
-            await supabase.from('lab_events').insert([
-                { date: activeDate, title: title, owner: user.username }
-            ]);
-            closeModal();
-            loadEvents();
+    async function loadEvents() {
+        const { data } = await _supabase.from('schedules').select('*');
+        events = data || [];
+        renderSide();
+    }
+
+    function fillTimeDropdowns() {
+        const s = document.getElementById('startTime'), e = document.getElementById('endTime');
+        for(let h=0; h<24; h++) {
+            for(let m of ['00', '30']) {
+                const t = `${String(h).padStart(2,'0')}:${m}`;
+                s.innerHTML += `<option value="${t}">${t}</option>`;
+                e.innerHTML += `<option value="${t}">${t}</option>`;
+            }
         }
+    }
 
-        async function deleteEvent(id) {
-            // 从云端删除
-            await supabase.from('lab_events').delete().eq('id', id);
-            loadEvents();
+    function renderSide() {
+        const list = document.getElementById('sideList');
+        if(!user) { list.innerHTML = '<p style="color:#555;text-align:center;margin-top:20px;">请登录后同步日程</p>'; return; }
+        const mine = events.filter(e => e.user_name === user.username).sort((a,b) => a.start_time.localeCompare(b.start_time));
+        list.innerHTML = mine.map(e => `
+            <div class="task-card">
+                <i class="fas fa-pen-nib edit-icon" onclick="openEventDetail(${e.id})"></i>
+                <h4>${e.content}</h4>
+                <p><i class="far fa-clock"></i> ${formatSideTime(e.start_time, e.end_time)}</p>
+            </div>
+        `).join('') || '<p style="color:#444;text-align:center;">清单空空如也</p>';
+    }
+
+    function render() {
+        const scrollArea = document.querySelector('.main-scroll-area');
+        const head = scrollArea.querySelector('.cal-header');
+        const grid = scrollArea.querySelector('.cal-grid');
+        head.innerHTML = ''; grid.innerHTML = '';
+        document.getElementById('currentTitle').innerText = `${focusDate.getFullYear()}年 ${focusDate.getMonth()+1}月`;
+        ['日','一','二','三','四','五','六'].forEach(d => head.innerHTML += `<div class="header-cell">${d}</div>`);
+
+        const firstDay = new Date(focusDate.getFullYear(), focusDate.getMonth(), 1).getDay();
+        const todayStr = getLocalDateStr(new Date());
+
+        for(let i=0; i<42; i++) {
+            const d = new Date(focusDate.getFullYear(), focusDate.getMonth(), i - firstDay + 1);
+            const dateStr = getLocalDateStr(d);
+            const cell = document.createElement('div');
+            cell.className = `day-cell ${dateStr === todayStr ? 'is-today' : ''}`;
+            if(d.getMonth() !== focusDate.getMonth()) cell.style.opacity = '0.15';
+            cell.innerHTML = `<span class="day-num">${d.getDate()}</span>`;
+            
+            // 权限过滤核心逻辑：如果未登录，只渲染 ADMIN 的日程
+            const dayEvents = events.filter(e => {
+                const isToday = e.start_time.startsWith(dateStr);
+                if(!user) return isToday && e.user_name === ADMIN_NAME;
+                return isToday;
+            }).sort((a,b) => a.start_time.localeCompare(b.start_time));
+
+            dayEvents.forEach(e => {
+                const color = stringToColor(e.user_name);
+                cell.innerHTML += `
+                    <div class="event-item" style="background:${color}; border-left-color:${color.replace('0.35','1')}" 
+                         onclick="event.stopPropagation(); openEventDetail(${e.id})">
+                        <b>${e.user_name}</b>${cleanTime(e.start_time)} ${e.content}
+                    </div>`;
+            });
+            cell.onclick = () => { if(user) openModal(dateStr); };
+            grid.appendChild(cell);
         }
+    }
 
-        loadEvents();
-    </script>
+    function openModal(date = '') {
+        activeId = null;
+        document.getElementById('modalTitle').innerText = "安排新日程";
+        document.getElementById('readOnlyMeta').innerHTML = "";
+        toggleFormState(false);
+        document.getElementById('delBtn').style.display = "none";
+        document.getElementById('saveBtn').style.display = "block";
+        document.getElementById('eventContent').value = "";
+        document.getElementById('eventDate').value = date || getLocalDateStr(new Date());
+        document.getElementById('startTime').value = "09:00";
+        document.getElementById('endTime').value = "10:00";
+        document.getElementById('overlay').style.display = "block";
+        document.getElementById('modal').style.display = "block";
+    }
+
+    function openEventDetail(id) {
+        const e = events.find(x => x.id === id);
+        if(!e) return;
+        if(!user && e.user_name !== ADMIN_NAME) return; // 再次确保游客安全
+
+        activeId = id;
+        const isMine = user && e.user_name === user.username;
+        document.getElementById('modalTitle').innerText = isMine ? "编辑我的日程" : "查看日程";
+        document.getElementById('readOnlyMeta').innerHTML = isMine ? "" : `<div class="read-only-info">发布者：${e.user_name}</div>`;
+        document.getElementById('eventContent').value = e.content;
+        document.getElementById('eventDate').value = e.start_time.split('T')[0];
+        document.getElementById('startTime').value = cleanTime(e.start_time);
+        document.getElementById('endTime').value = cleanTime(e.end_time);
+        toggleFormState(!isMine);
+        document.getElementById('saveBtn').style.display = isMine ? "block" : "none";
+        document.getElementById('delBtn').style.display = isMine ? "block" : "none";
+        document.getElementById('overlay').style.display = "block";
+        document.getElementById('modal').style.display = "block";
+    }
+
+    function toggleFormState(readonly) {
+        document.getElementById('eventContent').readOnly = readonly;
+        document.getElementById('eventDate').readOnly = readonly;
+        document.getElementById('startTime').disabled = readonly;
+        document.getElementById('endTime').disabled = readonly;
+    }
+
+    async function saveEvent() {
+        const content = document.getElementById('eventContent').value;
+        const date = document.getElementById('eventDate').value;
+        const st = document.getElementById('startTime').value, et = document.getElementById('endTime').value;
+        if(!content) return alert("内容描述不能为空");
+        const payload = { user_name: user.username, content, start_time: `${date}T${st}`, end_time: `${date}T${et}` };
+        if(activeId) await _supabase.from('schedules').update(payload).eq('id', activeId);
+        else await _supabase.from('schedules').insert([payload]);
+        closeModal(); await loadEvents(); render();
+    }
+
+    async function deleteEvent() {
+        if(confirm("确定彻底删除此项日程吗？")) {
+            await _supabase.from('schedules').delete().eq('id', activeId);
+            closeModal(); await loadEvents(); render();
+        }
+    }
+
+    function closeModal() { document.getElementById('overlay').style.display = 'none'; document.getElementById('modal').style.display = 'none'; }
+    function moveDate(s) { focusDate.setMonth(focusDate.getMonth() + s); render(); }
+    function handleAuth() { if(user) { localStorage.removeItem('lab_user'); location.reload(); } else { location.href='login.html'; } }
+
+    init();
+</script>
 </body>
 </html>
