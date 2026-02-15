@@ -1,46 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>PRO-LAB | Secure Login</title>
+    <title>Chuan | 安全验证登录</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #00d2ff; --bg: #0a0a0a; --card: #151515; --border: #333; --text: #eee; }
+        * { box-sizing: border-box; } 
+
         body { background: var(--bg); color: var(--text); font-family: 'PingFang SC', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .login-card { background: var(--card); padding: 35px; border-radius: 20px; border: 1px solid var(--border); width: 400px; box-shadow: 0 15px 50px rgba(0,0,0,0.6); }
-        .input-group { margin-bottom: 15px; position: relative; }
-        .input-group i { position: absolute; left: 12px; top: 12px; color: #555; }
-        input { width: 100%; padding: 10px 10px 10px 38px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; outline: none; }
-        .admin-box { display: none; background: rgba(0, 210, 255, 0.05); border: 1px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 15px; }
-        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
+        
+        .tabs { display: flex; background: #000; padding: 5px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #222; width: 100%; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #666; font-size: 0.9rem; transition: 0.3s; }
+        .tab.active { background: var(--primary); color: #000; font-weight: bold; }
+
+        .input-group { margin-bottom: 15px; position: relative; width: 100%; }
+        .input-group i { position: absolute; left: 12px; top: 12px; color: #555; width: 20px; text-align: center; }
+        input { width: 100%; padding: 10px 10px 10px 42px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; outline: none; transition: 0.3s; font-size: 0.95rem; display: block; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 8px rgba(0, 210, 255, 0.2); }
+
+        .admin-box { display: none; background: rgba(0, 210, 255, 0.05); border: 1px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 15px; width: 100%; }
+        
+        /* 密保问题展示 - 自动检测后显示的样式 */
+        .q-display { background: rgba(0, 210, 255, 0.15); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--primary); display: none; width: 100%; animation: fadeIn 0.4s; }
+        .q-label { font-size: 0.75rem; color: var(--primary); display: block; margin-bottom: 5px; font-weight: bold; }
+        .q-content { font-size: 0.95rem; color: #fff; font-weight: 500; }
+
+        .captcha-row { display: flex; gap: 10px; margin-bottom: 15px; width: 100%; }
+        .captcha-box { flex: 1; background: #222; color: var(--primary); display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; letter-spacing: 4px; border: 1px solid var(--border); cursor: pointer; height: 42px; }
+
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 1rem; }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .footer { text-align: center; margin-top: 20px; font-size: 0.85rem; color: #666; }
+        .link { cursor: pointer; transition: 0.3s; text-decoration: none; color: #666; }
+        .link:hover { color: var(--primary); }
+        .hidden { display: none; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="login-card">
-    <h2>PRO-LAB LOGIN</h2>
+    <div id="tabContainer" class="tabs">
+        <div class="tab active" id="tabL" onclick="switchMode('login')">登录</div>
+        <div class="tab" id="tabR" onclick="switchMode('reg')">注册</div>
+    </div>
+
+    <h2 id="mTitle" style="text-align:center; color:var(--primary); margin-bottom:20px; letter-spacing: 2px;">PRO-LAB LOGIN</h2>
 
     <div class="input-group">
         <i class="fas fa-user"></i>
-        <input type="text" id="username" placeholder="Username" oninput="handleUserCheck()">
+        <input type="text" id="username" placeholder="用户名" oninput="handleUsernameInput()">
     </div>
 
     <div id="adminArea" class="admin-box">
-        <div style="font-size: 0.7rem; color: var(--primary); margin-bottom: 5px;">Admin Verification (Recovery Key):</div>
+        <div style="font-size: 0.7rem; color: var(--primary); margin-bottom: 5px;">ADMIN SECURITY VERIFICATION:</div>
         <div class="input-group" style="margin-bottom:0;">
             <i class="fas fa-key"></i>
             <input type="password" id="adminKey" placeholder="Enter Recovery Key">
         </div>
     </div>
 
-    <div class="input-group">
-        <i class="fas fa-lock"></i>
-        <input type="password" id="password" placeholder="Password">
+    <div id="questionDisplay" class="q-display">
+        <span class="q-label"><i class="fas fa-comment-dots"></i> 您设定的密保问题是：</span>
+        <div id="q_text" class="q-content">正在调取...</div>
     </div>
 
-    <button class="btn-main" onclick="execute()">Sign In</button>
+    <div id="extraFields" class="hidden">
+        <div id="emailGroup" class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="email" placeholder="电子邮箱地址">
+        </div>
+        <div id="sqGroup" class="input-group">
+            <i class="fas fa-question-circle"></i>
+            <input type="text" id="s_q" placeholder="设置密保问题 (如：我的电脑简称？)">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-shield-alt"></i>
+            <input type="text" id="s_a" placeholder="输入密保答案">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="密码">
+    </div>
+
+    <div id="captchaArea" class="hidden">
+        <div class="captcha-row">
+            <div id="captchaDisplay" class="captcha-box" onclick="genCaptcha()">----</div>
+            <input type="text" id="captchaInput" placeholder="验证码" style="flex:1.2;">
+        </div>
+    </div>
+
+    <button class="btn-main" id="submitBtn" onclick="execute()">提交</button>
+    
+    <div class="footer">
+        <span class="link" id="forgetLink" onclick="switchMode('find')">忘记密码？</span>
+        <span class="link hidden" id="backLink" onclick="switchMode('login')">返回登录</span>
+    </div>
 </div>
 
 <script>
@@ -49,46 +111,143 @@
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     const ADMINS = ['Admin', 'Chen', 'Admin1', 'Admin2', 'Admin3'];
+    let currentMode = 'login';
+    let currentCaptcha = "";
+    let searchTimer; // 用于防抖
+
+    async function hash(pw) {
+        const msg = new TextEncoder().encode(pw);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msg);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function genCaptcha() {
+        const str = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let code = "";
+        for(let i=0; i<4; i++) code += str.charAt(Math.floor(Math.random() * str.length));
+        currentCaptcha = code;
+        document.getElementById('captchaDisplay').innerText = code;
+    }
+
+    function switchMode(m) {
+        currentMode = m;
+        const isLogin = (m === 'login');
+        const isReg = (m === 'reg');
+        const isFind = (m === 'find');
+
+        document.getElementById('tabContainer').style.display = isFind ? 'none' : 'flex';
+        document.getElementById('tabL').className = isLogin ? 'tab active' : 'tab';
+        document.getElementById('tabR').className = isReg ? 'tab active' : 'tab';
+        
+        document.getElementById('mTitle').innerText = isReg ? 'NEW ACCOUNT' : (isFind ? 'RESET PASSWORD' : 'PRO-LAB LOGIN');
+        document.getElementById('submitBtn').innerText = isReg ? '创建账号' : (isFind ? '重置并登录' : '立即登录');
+        document.getElementById('password').placeholder = isFind ? '设置新密码' : '密码';
+
+        document.getElementById('extraFields').className = isLogin ? 'hidden' : '';
+        document.getElementById('emailGroup').style.display = isReg ? 'block' : 'none';
+        document.getElementById('sqGroup').style.display = isReg ? 'block' : 'none';
+        document.getElementById('captchaArea').className = isReg ? '' : 'hidden';
+        document.getElementById('forgetLink').className = isLogin ? 'link' : 'hidden';
+        document.getElementById('backLink').className = isLogin ? 'hidden' : 'link';
+        
+        document.getElementById('questionDisplay').style.display = 'none';
+
+        if(isReg) genCaptcha();
+        handleUserCheck();
+    }
+
+    // 处理用户名输入：管理员检测 + 防抖自动查库
+    function handleUsernameInput() {
+        const name = document.getElementById('username').value.trim();
+        
+        // 1. 实时检测是否为管理员
+        document.getElementById('adminArea').style.display = (currentMode === 'login' && ADMINS.includes(name)) ? 'block' : 'none';
+
+        // 2. 如果是找回密码模式，启动防抖自动查库
+        if (currentMode === 'find') {
+            clearTimeout(searchTimer);
+            if (!name) {
+                document.getElementById('questionDisplay').style.display = 'none';
+                return;
+            }
+            // 停止输入 500ms 后执行
+            searchTimer = setTimeout(() => {
+                autoFetchQuestion(name);
+            }, 500);
+        }
+    }
 
     function handleUserCheck() {
         const name = document.getElementById('username').value.trim();
-        document.getElementById('adminArea').style.display = ADMINS.includes(name) ? 'block' : 'none';
+        document.getElementById('adminArea').style.display = (currentMode === 'login' && ADMINS.includes(name)) ? 'block' : 'none';
+    }
+
+    // 核心自动检测逻辑
+    async function autoFetchQuestion(u) {
+        if(ADMINS.includes(u)) {
+            document.getElementById('questionDisplay').style.display = 'block';
+            document.getElementById('q_text').innerText = "管理员不支持密保找回，请使用密钥。";
+            return;
+        }
+
+        const { data, error } = await _supabase.from('users').select('security_question').eq('username', u).maybeSingle();
+        
+        document.getElementById('questionDisplay').style.display = 'block';
+        if(data && data.security_question) {
+            document.getElementById('q_text').innerText = data.security_question;
+        } else {
+            document.getElementById('q_text').innerText = "未找到该用户或未设置密保。";
+        }
     }
 
     async function execute() {
         const u = document.getElementById('username').value.trim();
         const p = document.getElementById('password').value.trim();
-        if(!u || !p) return alert("Please fill in all fields.");
+        if(!u || !p) return alert("请填写完整信息");
 
-        const { data: user, error } = await _supabase
-            .from('credentials_backup') 
-            .select('*')
-            .eq('username', u)
-            .maybeSingle();
+        if (currentMode === 'login') {
+            if (ADMINS.includes(u)) {
+                const ak = document.getElementById('adminKey').value.trim();
+                const { data: admin } = await _supabase.from('credentials_backup').select('*').eq('username', u).maybeSingle();
+                if(admin && admin.plain_password === p && admin.recovery_key === ak) loginSuccess(admin, 'admin');
+                else alert("管理员身份验证不匹配");
+            } else {
+                const { data: user } = await _supabase.from('users').select('*').eq('username', u).maybeSingle();
+                if(user && user.password_hash === await hash(p)) loginSuccess(user, 'user');
+                else alert("密码或用户名错误");
+            }
+        } else if (currentMode === 'reg') {
+            const cap = document.getElementById('captchaInput').value.toUpperCase();
+            if(cap !== currentCaptcha) return alert("验证码错误");
+            const em = document.getElementById('email').value.trim();
+            const sq = document.getElementById('s_q').value.trim();
+            const sa = document.getElementById('s_a').value.trim();
 
-        if (error) return alert("Database Error: " + error.message);
-        if (!user) return alert("User does not exist.");
+            const { error: rErr } = await _supabase.from('users').insert([{
+                username: u, password_hash: await hash(p), email: em,
+                security_question: sq, security_answer: sa, role: 'user'
+            }]);
+            
+            if(rErr) {
+                if(rErr.message.includes("users_email_key")) alert("该邮箱已注册");
+                else alert("错误: " + rErr.message);
+            } else { alert("注册成功！"); switchMode('login'); }
 
-        if (ADMINS.includes(u)) {
-            const inputKey = document.getElementById('adminKey').value.trim();
-            if (inputKey !== user.recovery_key) return alert("Invalid Admin Recovery Key!");
-            if (user.plain_password === p) loginSuccess(user);
-            else alert("Incorrect password.");
-        } else {
-            if (user.plain_password === p) loginSuccess(user);
-            else alert("Incorrect password.");
+        } else if (currentMode === 'find') {
+            const sa = document.getElementById('s_a').value.trim();
+            const { data: user } = await _supabase.from('users').select('*').eq('username', u).maybeSingle();
+            
+            if(user && user.security_answer === sa) {
+                const { error: uErr } = await _supabase.from('users').update({ password_hash: await hash(p) }).eq('id', user.id);
+                if(!uErr) { alert("新密码已生效"); switchMode('login'); }
+                else alert("更新失败");
+            } else alert("密保答案不匹配");
         }
     }
 
-    function loginSuccess(user) {
-        localStorage.setItem('lab_user', JSON.stringify({username: user.username}));
-        
-        // Smart Redirect Logic
-        const params = new URLSearchParams(window.location.search);
-        const redirectTo = params.get('from') || 'index.html'; 
-        
-        alert("Welcome, " + user.username);
-        location.href = redirectTo;
+    function loginSuccess(user, role) {
+        localStorage.setItem('lab_user', JSON.stringify({username: user.username, role: role}));
+        location.href = 'schedule.html';
     }
 </script>
 </body>
