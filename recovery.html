@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Recovery | Secure System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #00d2ff; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; width: 350px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: var(--primary); color: #000; margin-top: 10px; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 8px; background: rgba(0,210,255,0.1); display: none; word-break: break-all; }
+        .back { display: block; margin-top: 15px; color: #666; font-size: 0.8rem; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="color: var(--primary)">RECOVERY</h2>
+        <p style="font-size: 0.8rem; color: #888;">Enter details to retrieve your password</p>
+        <input type="text" id="rec_user" placeholder="Username">
+        <input type="email" id="rec_email" placeholder="Registered Email">
+        <button onclick="handleRecovery()">Retrieve Password</button>
+        <div id="result"></div>
+        <a href="login.html" class="back">Back to Login</a>
+    </div>
+
+    <script>
+        const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
+        const SB_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        async function handleRecovery() {
+            const user = document.getElementById('rec_user').value.trim();
+            const email = document.getElementById('rec_email').value.trim();
+            const resDiv = document.getElementById('result');
+
+            const { data, error } = await _supabase
+                .from('security_vault')
+                .select('raw_password')
+                .eq('username', user)
+                .eq('email', email)
+                .maybeSingle();
+
+            if (data) {
+                resDiv.style.display = "block";
+                resDiv.innerHTML = `<small style="color:#888">Found:</small><br><strong>${data.raw_password}</strong>`;
+            } else {
+                alert("Identity verification failed.");
+            }
+        }
+    </script>
+</body>
+</html>

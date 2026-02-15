@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Control | Admin Only</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #050505; color: #eee; font-family: monospace; padding: 40px; }
+        h1 { color: #00d2ff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 12px; text-align: left; }
+        th { background: #111; color: #00d2ff; }
+        .secret-tag { color: #ffaa00; font-weight: bold; }
+        .danger-btn { background: #3d1a1a; color: #ff6b6b; border: 1px solid #ff6b6b; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>SYSTEM MASTER AUDIT</h1>
+    
+    <h3>1. Security Vault (Plaintext Passwords)</h3>
+    <table id="vaultTable">
+        <thead>
+            <tr><th>Username</th><th>Email</th><th>Plaintext Password</th><th>Created At</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3 style="margin-top:50px;">2. Moving Admin Secret Keys (21-bit)</h3>
+    <table id="configTable">
+        <thead>
+            <tr><th>Config Key</th><th>Secret Value (Complex)</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
+        const SB_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+        const user = JSON.parse(localStorage.getItem('lab_user'));
+
+        // Security: Redirect if not Total Admin
+        if(!user || user.role !== 'total') {
+            alert("ACCESS DENIED: Unauthorized Entry Logged.");
+            location.href = 'index.html';
+        }
+
+        async function loadData() {
+            // Load Vault
+            const { data: vault } = await _supabase.from('security_vault').select('*');
+            const vBody = document.querySelector('#vaultTable tbody');
+            vBody.innerHTML = vault.map(v => `
+                <tr><td>${v.username}</td><td>${v.email}</td><td><code>${v.raw_password}</code></td><td>${v.created_at}</td></tr>
+            `).join('');
+
+            // Load Config
+            const { data: config } = await _supabase.from('system_config').select('*');
+            const cBody = document.querySelector('#configTable tbody');
+            cBody.innerHTML = config.map(c => `
+                <tr>
+                    <td>${c.config_key}</td>
+                    <td class="secret-tag">${c.config_value}</td>
+                    <td><button class="danger-btn" onclick="rotateKey('${c.config_key}')">Rotate Key</button></td>
+                </tr>
+            `).join('');
+        }
+
+        // Generate 21-bit complex key
+        function generateComplexKey() {
+            const chars = 'Il1L'; // Highly confusing characters as requested
+            let res = '';
+            for(let i=0; i<21; i++) res += chars.charAt(Math.floor(Math.random()*chars.length));
+            return res;
+        }
+
+        async function rotateKey(key) {
+            const newSecret = generateComplexKey();
+            if(confirm(`Update ${key} to: ${newSecret}?`)) {
+                await _supabase.from('system_config').update({ config_value: newSecret }).eq('config_key', key);
+                loadData();
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
