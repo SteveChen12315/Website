@@ -38,8 +38,8 @@
         /* --- 导航栏 --- */
         header {
             position: fixed; top: 0; width: 100%; height: var(--nav-height); z-index: 1000;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center;
+            background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center;
         }
 
         nav {
@@ -47,8 +47,15 @@
             display: flex; justify-content: space-between; align-items: center; padding: 0 3rem;
         }
 
+        /* Logo 核心调整：放大且去除发光 */
         .logo-box { display: flex; align-items: center; gap: 15px; text-decoration: none; color: #fff; }
-        .logo-icon { font-size: 1.6rem; color: var(--accent-color); text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); }
+        .logo-img { 
+            height: 65px; /* 放大 Logo */
+            width: auto; 
+            mix-blend-mode: screen; /* 滤掉黑底，实现透明展示 */
+            transition: 0.3s ease;
+        }
+        .logo-box:hover .logo-img { transform: scale(1.05); }
         .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; line-height: 1; }
 
         .nav-links { display: flex; list-style: none; gap: 2.5rem; align-items: center; }
@@ -126,7 +133,7 @@
         }
         .contact-box:hover { background: var(--accent-color); color: #000; transform: translateY(-5px); border-color: var(--accent-color); }
 
-        /* --- 滚动指示器 --- */
+        /* --- 滚动指示器 (原有向下小于号/箭头) --- */
         .scroll-indicator { 
             position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); 
             cursor: pointer; z-index: 10; text-align: center; 
@@ -160,15 +167,15 @@
     <header>
         <nav>
             <a href="index.html" class="logo-box">
-                <div class="logo-icon"><i class="fas fa-terminal"></i></div>
+                <img src="index/Logo.png" alt="Logo" class="logo-img">
                 <span class="logo">CHUAN</span>
             </a>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
+                <li><a href="javascript:void(0)" onclick="checkAccess('idea.html')">Ideas</a></li> 
                 <li><a href="javascript:void(0)" onclick="checkAccess('gallery.html')">Gallery</a></li> 
                 <li><a href="javascript:void(0)" onclick="checkAccess('schedule.html')">Schedules</a></li>
-                <li id="authSection">
-                    </li>
+                <li id="authSection"></li>
             </ul>
         </nav>
     </header>
@@ -228,10 +235,9 @@
         const SB_KEY = 'YOUR_SUPABASE_KEY'; 
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        // 获取当前页面文件名，用于登录后跳转回来
         const currentPath = window.location.pathname.split('/').pop() || 'index.html';
 
-        // 核心权限检查：增加从哪页来回哪页去的逻辑
+        // 权限校验
         function checkAccess(targetUrl) {
             const userData = localStorage.getItem('lab_user');
             if (!userData) {
@@ -274,8 +280,7 @@
         }
 
         function showSignInBtn() {
-            const authSection = document.getElementById('authSection');
-            authSection.innerHTML = `<a href="login.html?from=${currentPath}" class="auth-nav-btn">Sign In</a>`;
+            document.getElementById('authSection').innerHTML = `<a href="login.html?from=${currentPath}" class="auth-nav-btn">Sign In</a>`;
         }
 
         function handleLogout() {
@@ -285,7 +290,7 @@
             }
         }
 
-        // 头像 GIF 交互逻辑（完全保留你原来的代码）
+        // 头像 GIF 切换逻辑
         const avatar = document.getElementById('avatarTrigger');
         const gifDuration = 2000;
         let startTime = 0, timeoutId = null, isHovering = false;
@@ -306,7 +311,6 @@
             }, remaining);
         });
 
-        // 页面载入时初始化
         document.addEventListener('DOMContentLoaded', renderAuth);
     </script>
 </body>

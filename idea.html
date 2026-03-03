@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuan | Idea Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #00d2ff; 
+            --bg: #0a0a0a; 
+            --card: #151515; 
+            --border: #333; 
+            --text: #eee; 
+            --banner-ratio: 33.3%; 
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding-top: 80px; }
+
+        /* --- Header --- */
+        header {
+            position: fixed; top: 0; width: 100%; height: 80px; z-index: 1000;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center;
+        }
+        nav { max-width: 1200px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 3rem; }
+        .logo-box { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; font-weight: 900; letter-spacing: 2px; }
+        .logo-img { height: 35px; width: auto; filter: drop-shadow(0 0 8px var(--primary)); }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        
+        /* --- Idea Banner (Using Idea.png) --- */
+        .static-banner {
+            width: 100%;
+            padding-top: var(--banner-ratio);
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            border: 1px solid var(--border);
+            background: url('index/Idea.png') no-repeat center center;
+            background-size: cover;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+        .banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 60%);
+            display: flex;
+            align-items: flex-end;
+            padding: 25px 35px;
+        }
+        .banner-text { 
+            letter-spacing: 4px; 
+            color: var(--primary); 
+            font-weight: 900; 
+            font-size: 1.4rem; 
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(0,210,255,0.6); 
+        }
+
+        /* --- Form --- */
+        .header-title { margin-bottom: 25px; border-left: 4px solid var(--primary); padding-left: 18px; }
+        .header-title h1 { font-size: 1.8rem; letter-spacing: 3px; font-weight: 800; color: #fff; }
+        .header-title p { color: #555; font-size: 0.85rem; margin-top: 5px; letter-spacing: 1px; }
+
+        .idea-form { 
+            background: var(--card); 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            margin-bottom: 50px; 
+            box-shadow: 0 4px 25px rgba(0,0,0,0.4); 
+        }
+
+        input, textarea { 
+            width: 100%; background: #000; border: 1px solid var(--border); color: #fff; 
+            padding: 16px; border-radius: 12px; margin-bottom: 20px; outline: none; 
+            transition: 0.3s; font-size: 0.95rem; border-left: 2px solid transparent;
+        }
+        input:focus, textarea:focus { 
+            border-color: var(--primary); 
+            border-left: 2px solid var(--primary);
+            box-shadow: 0 0 15px rgba(0,210,255,0.05); 
+        }
+        
+        .btn-send { 
+            background: var(--primary); color: #000; border: none; padding: 15px 45px; 
+            border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.4s; 
+            font-size: 0.95rem; display: flex; align-items: center; gap: 12px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-send:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(0,210,255,0.4); 
+            background: #fff;
+        }
+
+        /* --- Idea Cards --- */
+        .idea-card { 
+            background: var(--card); padding: 25px; border-radius: 18px; border: 1px solid var(--border); 
+            margin-bottom: 25px; position: relative; transition: 0.4s ease;
+        }
+        .idea-card:hover { 
+            border-color: var(--primary); 
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .idea-card h3 { color: var(--primary); margin-bottom: 15px; font-size: 1.3rem; letter-spacing: 1px; }
+        .idea-card p { color: #ccc; line-height: 1.8; white-space: pre-wrap; font-size: 0.95rem; }
+        
+        .idea-meta { 
+            margin-top: 20px; font-size: 0.75rem; color: #555; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-top: 1px solid #222; padding-top: 18px; 
+        }
+        .meta-item { display: flex; align-items: center; gap: 8px; }
+        .delete-btn { 
+            color: #ff4d4d; cursor: pointer; opacity: 0; transition: 0.3s; 
+            padding: 6px 12px; border: 1px solid transparent; border-radius: 6px; 
+        }
+        .delete-btn:hover { background: rgba(255, 77, 77, 0.1); border-color: #ff4d4d; }
+        .idea-card:hover .delete-btn { opacity: 1; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="logo-box">
+            <img src="index/Logo.png" class="logo-img">
+            <span>CHUAN</span>
+        </a>
+        <div id="userInfo" style="font-size: 0.8rem; color: var(--primary); font-weight: bold; letter-spacing: 1px;"></div>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="static-banner">
+        <div class="banner-overlay">
+            <div class="banner-text">Banana Idea Matrix</div>
+        </div>
+    </div>
+
+    <div class="header-title">
+        <h1>IDEA LAB</h1>
+        <p>SYNCHRONIZING INTELLECTUAL SPARKS...</p>
+    </div>
+
+    <div class="idea-form">
+        <input type="text" id="ideaTitle" placeholder="Idea Title">
+        <textarea id="ideaContent" rows="5" placeholder="Record your brilliant thoughts here..."></textarea>
+        <button class="btn-send" onclick="submitIdea()">
+            <i class="fas fa-bolt"></i> DEPLOY TO MATRIX
+        </button>
+    </div>
+
+    <div id="ideaList">
+        <p style="text-align: center; color: #333; letter-spacing: 2px; padding: 40px;">INITIALIZING CLOUD DATA...</p>
+    </div>
+</div>
+
+<script>
+    // Supabase Configuration
+    const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
+    const SB_KEY = 'YOUR_SUPABASE_KEY'; 
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    // Authentication Check
+    const userData = JSON.parse(localStorage.getItem('lab_user'));
+    if (!userData) {
+        window.location.href = 'login.html';
+    } else {
+        document.getElementById('userInfo').innerText = `NODE_ID: ${userData.username.toUpperCase()}`;
+    }
+
+    // Submit Idea
+    async function submitIdea() {
+        const title = document.getElementById('ideaTitle').value.trim();
+        const content = document.getElementById('ideaContent').value.trim();
+
+        if (!title) return alert("Please enter a title to activate the Idea Matrix.");
+
+        const { error } = await _supabase.from('ideas').insert([{
+            title: title,
+            content: content,
+            user_id: userData.username, 
+            user_name: userData.username
+        }]);
+
+        if (error) {
+            alert("Data synchronization failed: " + error.message);
+        } else {
+            document.getElementById('ideaTitle').value = "";
+            document.getElementById('ideaContent').value = "";
+            fetchIdeas();
+        }
+    }
+
+    // Fetch Data
+    async function fetchIdeas() {
+        const { data, error } = await _supabase
+            .from('ideas')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) return;
+
+        const listDiv = document.getElementById('ideaList');
+        if (data.length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center; color:#444; padding:20px;">The Matrix is empty. Awaiting inspiration...</p>';
+            return;
+        }
+
+        listDiv.innerHTML = data.map(item => `
+            <div class="idea-card">
+                <h3>${item.title}</h3>
+                <p>${item.content || 'No detailed description available...'}</p>
+                <div class="idea-meta">
+                    <div class="meta-item">
+                        <span><i class="far fa-clock"></i> ${new Date(item.created_at).toLocaleString()}</span>
+                        <span style="margin-left:20px;"><i class="fas fa-fingerprint"></i> ${item.user_name}</span>
+                    </div>
+                    ${item.user_id === userData.username ? `
+                        <span class="delete-btn" onclick="deleteIdea('${item.id}')">
+                            <i class="fas fa-trash-alt"></i> REMOVE
+                        </span>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Delete Idea
+    async function deleteIdea(id) {
+        if (!confirm("Are you sure you want to permanently remove this idea from the Matrix?")) return;
+        const { error } = await _supabase.from('ideas').delete().eq('id', id);
+        if (!error) fetchIdeas();
+    }
+
+    // Initialization
+    fetchIdeas();
+</script>
+</body>
+</html>
