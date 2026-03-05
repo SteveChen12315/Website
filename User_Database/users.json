@@ -1,0 +1,18 @@
+[
+  {
+    "username": "ADMIN_E3EHA",
+    "password_hash": "2f701a6c2aea5075fc9d8941575e023bd369a1eef786721f028b7797ee92f522",
+    "secret_hash": "5a28e266a197f3b73099697f3c33d1ceaac0a6bd75753161de9863f0645c2cb6",
+    "role": "temp_admin",
+    "created_at": "2026/3/5 19:11:45",
+    "is_used": true,
+    "note": "测试"
+  },
+  {
+    "username": "Chen",
+    "password_hash": "448a98bc5308cf135574d757e9ceb715bfb26c9023d296dc283426c3ac60ba63",
+    "email": "Chen_Mj1224@163.com",
+    "role": "user",
+    "created_at": "2026/3/5 19:13:03"
+  }
+]

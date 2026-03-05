@@ -2,63 +2,121 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Chen | Plan</title>
+    <title>Chen | Plan & Roadmap</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --accent-color: #00d2ff; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #000; color: white; min-height: 100vh; }
+        :root { --accent-color: #00d2ff; --card-bg: rgba(255, 255, 255, 0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'PingFang SC', sans-serif; }
+        body { background-color: #000; color: white; min-height: 100vh; overflow-x: hidden; }
         
+        /* 背景图层 */
         .bg-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover; z-index: -1;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-position: center; z-index: -1;
+            transform: scale(1.1); /* 轻微放大防止边缘空白 */
         }
 
+        /* 导航栏 */
         header {
-            position: fixed; top: 0; width: 100%; padding: 1.5rem 0; z-index: 1000;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: fixed; top: 0; width: 100%; padding: 1.2rem 0; z-index: 1000;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
+        nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }
+        .logo-area { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        .logo { font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; }
 
-        nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 3rem; }
-        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 4px; }
-
-        .container { max-width: 800px; margin: 150px auto 50px; padding: 0 2rem; }
+        /* 主体内容 */
+        .container { max-width: 800px; margin: 140px auto 100px; padding: 0 2rem; }
         
-        .plan-item {
-            background: rgba(255,255,255,0.05); padding: 2rem; border-left: 4px solid var(--accent-color);
-            margin-bottom: 20px; border-radius: 0 15px 15px 0; backdrop-filter: blur(5px);
+        .section-title {
+            font-size: 0.8rem; color: var(--accent-color); letter-spacing: 5px;
+            text-transform: uppercase; margin-bottom: 30px; display: block; opacity: 0.7;
         }
 
-        .plan-item h3 { color: var(--accent-color); margin-bottom: 10px; }
-        .plan-item p { opacity: 0.8; line-height: 1.6; }
+        /* 计划卡片样式 */
+        .plan-item {
+            background: var(--card-bg); padding: 2.5rem; 
+            border-left: 2px solid var(--accent-color);
+            margin-bottom: 25px; border-radius: 4px 15px 15px 4px; 
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative; overflow: hidden;
+        }
+        .plan-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: -5px 5px 20px rgba(0, 210, 255, 0.1);
+        }
+        .plan-item::after {
+            content: ""; position: absolute; top: 0; right: 0; width: 100px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.03));
+            pointer-events: none;
+        }
 
-        .footer-tags { position: fixed; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 4rem; font-size: 0.75rem; opacity: 0.4; }
+        .plan-item h3 { color: var(--accent-color); margin-bottom: 12px; font-size: 1.25rem; font-weight: 600; }
+        .plan-item p { opacity: 0.7; line-height: 1.8; font-size: 0.95rem; font-weight: 300; }
+
+        /* 底部标签 */
+        .footer-tags { 
+            position: fixed; bottom: 30px; width: 100%; 
+            display: flex; justify-content: center; gap: 3rem; 
+            font-size: 0.7rem; opacity: 0.4; letter-spacing: 2px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .container { margin-top: 100px; }
+            .plan-item { padding: 1.5rem; }
+            .footer-tags { flex-direction: column; align-items: center; gap: 10px; bottom: 15px; }
+        }
     </style>
 </head>
 <body>
     <div class="bg-fixed"></div>
+    
     <header>
         <nav>
-            <div style="display:flex;align-items:center;gap:15px;">
-                <span style="color:var(--accent-color);font-size:1.4rem;"><i class="fas fa-dna"></i></span>
-                <span class="logo">CHEN</span>
-            </div>
-            <a href="index.html" style="color:white;text-decoration:none;opacity:0.7;">返回首页</a>
+            <a href="index.html" class="logo-area">
+                <span style="color:var(--accent-color);"><i class="fas fa-terminal"></i></span>
+                <span class="logo">PRO-LAB</span>
+            </a>
+            <a href="index.html" style="color:white; text-decoration:none; font-size:0.85rem; opacity:0.6; transition:0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">
+                <i class="fas fa-arrow-left"></i> BACK TO CORE
+            </a>
         </nav>
     </header>
+
     <div class="container">
+        <span class="section-title">Development Roadmap</span>
+
         <div class="plan-item">
-            <h3>2026 Q1: 生信平台升级</h3>
-            <p>集成更先进的单细胞轨迹推断算法，优化后端响应速度。</p>
+            <h3>2026 Q1: 生信平台升级 (Bio-Core 2.0)</h3>
+            <p>集成更先进的单细胞轨迹推断算法，优化后端 CSV 读写锁机制，提升在大规模数据集下的响应速度与并发处理能力。</p>
         </div>
+
         <div class="plan-item">
-            <h3>2026 Q2: AI 代理集成</h3>
-            <p>将 Gemini 1.5 Pro 深度嵌入工作流，实现全自动报告撰写。</p>
+            <h3>2026 Q2: AI 代理集成 & 自动化报告</h3>
+            <p>将 Gemini 1.5 Pro 深度嵌入研究流，实现从原始数据清洗到学术规范报告的全自动撰写，支持多模态图表解析。</p>
+        </div>
+
+        <div class="plan-item">
+            <h3>2026 Q3: 私有化知识库构建</h3>
+            <p>建立基于 RAG（检索增强生成）的本地实验室文档库，使 AI 能够学习并引用以往的实验笔记与历史数据。</p>
         </div>
     </div>
+
     <div class="footer-tags">
-        <span>SCANPY SUPPORTED</span><span>POWERED BY GEMINI</span>
+        <span><i class="fas fa-check-circle"></i> SCANPY SUPPORTED</span>
+        <span><i class="fas fa-bolt"></i> POWERED BY GEMINI 1.5 PRO</span>
+        <span><i class="fas fa-database"></i> LOCAL CSV DATASTREAM</span>
     </div>
+
+    <script>
+        // 未来可以在这里添加从 Node.js 获取计划列表的逻辑
+        // async function fetchRoadmap() { ... }
+    </script>
 </body>
 </html>

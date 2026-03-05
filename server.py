@@ -1,64 +1,99 @@
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-import json
-import os
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
+const app = express();
 
-class LabHandler(SimpleHTTPRequestHandler):
-    def read_db(self, name):
-        filename = f'{name}.json'
-        if os.path.exists(filename):
-            with open(filename, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        return []
+app.use(cors());
+app.use(express.json());
 
-    def write_db(self, name, data):
-        with open(f'{name}.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+const USERS_FILE = path.join(__dirname, 'users.csv');
 
-    def do_GET(self):
-        # 接口：获取所有日程
-        if self.path == '/api/get_events':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(self.read_db('events')).encode())
-        # 接口：获取所有用户（用于登录校验和管理）
-        elif self.path == '/api/get_users':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(self.read_db('users')).encode())
-        else:
-            super().do_GET()
+// 初始化 CSV：必须带 BOM 头 (\ufeff) 才能让 Excel/记事本正确显示中文
+if (!fs.existsSync(USERS_FILE)) {
+    const header = '\ufeffusername,password_hash,secret_hash,role,email,reg_date,is_used,note\n';
+    fs.writeFileSync(USERS_FILE, header, 'utf8');
+}
 
-    def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        post_data = json.loads(self.rfile.read(content_length).decode())
+// 通用 CSV 读取函数
+function readCSV(filePath) {
+    try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const lines = content.replace('\ufeff', '').split('\n').filter(line => line.trim() !== '');
+        if (lines.length === 0) return [];
+        const headers = lines[0].split(',');
+        return lines.slice(1).map(line => {
+            const values = line.split(',');
+            let obj = {};
+            headers.forEach((header, i) => obj[header] = values[i]);
+            return obj;
+        });
+    } catch (e) { return []; }
+}
 
-        if self.path == '/api/register':
-            users = self.read_db('users')
-            users.append(post_data)
-            self.write_db('users', users)
-            self.send_response(200)
-        
-        elif self.path == '/api/save_event':
-            events = self.read_db('events')
-            events.append(post_data)
-            self.write_db('events', events)
-            self.send_response(200)
+// 登录接口
+app.post('/api/login', (req, res) => {
+    const { username, password_hash, secret_hash } = req.body;
+    const users = readCSV(USERS_FILE);
+    
+    // 1. 基础匹配
+    const user = users.find(u => u.username === username && u.password_hash === password_hash);
+    if (!user) return res.json({ success: false, message: "Invalid ID or Password" });
 
-        elif self.path == '/api/delete_event':
-            events = self.read_db('events')
-            events = [e for e in events if str(e['id']) != str(post_data['id'])]
-            self.write_db('events', events)
-            self.send_response(200)
+    // 2. 机动管理员过期检查
+    if (user.role === 'temp_admin' && user.is_used === 'true') {
+        return res.json({ success: false, message: "Access Expired (One-time only)" });
+    }
 
-        self.end_headers()
-        self.wfile.write(b'OK')
+    // 3. Secret 校验 (机动管理员或包含 boss/admin 的 ID 必须校验)
+    const needsSecret = user.role === 'temp_admin' || user.role === 'developer' || username.toLowerCase().includes('boss');
+    if (needsSecret && user.secret_hash !== secret_hash) {
+        return res.json({ success: false, message: "Security Secret Mismatch" });
+    }
 
-# 自动创建初始管理员
-if not os.path.exists('users.json'):
-    with open('users.json', 'w') as f:
-        json.dump([{"username": "admin", "pass": "admin123", "email": "admin@lab.com"}], f)
+    // 4. 如果是机动管理员，成功后标记为已使用
+    if (user.role === 'temp_admin') {
+        let rawContent = fs.readFileSync(USERS_FILE, 'utf8');
+        let lines = rawContent.split('\n');
+        let newContent = lines.map(line => {
+            if (line.includes(username) && line.includes('temp_admin')) {
+                let parts = line.split(',');
+                parts[6] = 'true'; // 将 is_used 设为 true
+                return parts.join(',');
+            }
+            return line;
+        }).join('\n');
+        fs.writeFileSync(USERS_FILE, newContent, 'utf8');
+    }
 
-print("实验室系统运行中: http://localhost:8000")
-HTTPServer(('0.0.0.0', 8000), LabHandler).serve_forever()
+    res.json({ success: true, user: { username: user.username, role: user.role } });
+});
+
+// 生成机动管理员 (支持中文备注)
+app.post('/api/generate-temp-admin', (req, res) => {
+    const { dev_pass, note } = req.body;
+    if (dev_pass !== 'Cmj123456') return res.json({ success: false, message: "Dev Auth Failed" });
+
+    const temp_id = "ADMIN_" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const temp_pass = "PWD_" + Math.random().toString(36).substring(2, 6).toUpperCase();
+    const temp_sec = "SEC_" + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    // 写入新行：使用 UTF-8 确保中文 note 正常
+    const newLine = `${temp_id},${temp_pass},${temp_sec},temp_admin,none,${new Date().toLocaleString()},false,${note || 'No Note'}\n`;
+    fs.appendFileSync(USERS_FILE, newLine, 'utf8');
+
+    res.json({ success: true, credentials: { temp_id, temp_pass, temp_secret: temp_sec } });
+});
+
+// 注册接口
+app.post('/api/register', (req, res) => {
+    const { username, email, password_hash } = req.body;
+    const users = readCSV(USERS_FILE);
+    if (users.find(u => u.username === username)) return res.json({ success: false, message: "User exists" });
+
+    const newLine = `${username},${password_hash},,user,${email},${new Date().toLocaleString()},false,Standard User\n`;
+    fs.appendFileSync(USERS_FILE, newLine, 'utf8');
+    res.json({ success: true });
+});
+
+app.listen(3000, () => console.log('>>> SECURE CORE RUNNING ON PORT 3000 <<<'));

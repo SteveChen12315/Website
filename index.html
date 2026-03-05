@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chuan | Home Page</title>
+    <title>CHUAN | CENTRAL TERMINAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #ffffff;
@@ -15,9 +13,10 @@
             --nav-height: 80px;
             --card-bg: #151515;
             --border-color: rgba(255, 255, 255, 0.05);
+            --server-btn-glow: rgba(0, 210, 255, 0.3);
         }
 
-        /* 基础样式与吸附逻辑 */
+        /* Basic Setup & Scroll Snap */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
         html { 
@@ -32,12 +31,12 @@
             height: 100vh; 
         }
 
-        /* 滚动条美化 */
+        /* Scrollbar Styling */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
-        /* --- 导航栏 --- */
+        /* --- Header & Navigation --- */
         header {
             position: fixed; top: 0; width: 100%; height: var(--nav-height); z-index: 1000;
             background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -62,23 +61,42 @@
         .nav-links { display: flex; list-style: none; gap: 2rem; align-items: center; height: 100%; }
         .nav-links a, .nav-item { 
             color: rgba(255, 255, 255, 0.8); text-decoration: none; font-weight: 500; 
-            transition: 0.3s; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;
+            transition: 0.3s; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;
             cursor: pointer;
         }
         .nav-links a:hover, .nav-item:hover { color: var(--accent-color); }
 
-        /* --- AI Agent 下拉菜单修复版 --- */
+        /* Server Button Glow */
+        .server-btn {
+            border: 1px solid var(--accent-color);
+            padding: 5px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem !important;
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 10px var(--server-btn-glow);
+            transition: 0.4s !important;
+        }
+        .server-btn:hover {
+            background: var(--accent-color) !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px var(--accent-color);
+        }
+
+        /* AI Agents Dropdown */
         .dropdown { 
             position: relative; 
             display: flex; 
             align-items: center; 
-            height: var(--nav-height); /* 撑满导航栏高度，消除空隙 */
+            height: var(--nav-height);
         }
         
         .dropdown-content {
             display: none; 
             position: absolute; 
-            top: var(--nav-height); /* 直接从导航栏底部开始显示 */
+            top: var(--nav-height); 
             left: 50%;
             transform: translateX(-50%);
             background: #111; 
@@ -88,10 +106,7 @@
             box-shadow: 0 15px 50px rgba(0,0,0,0.9); 
             padding: 10px 0;
             z-index: 1001;
-            /* 增加透明顶边作为鼠标移动的安全桥梁 */
-            border-top: 15px solid transparent;
-            background-clip: padding-box;
-            margin-top: -15px; /* 抵消顶边的位移 */
+            margin-top: -10px;
         }
 
         .dropdown:hover .dropdown-content { 
@@ -106,33 +121,34 @@
 
         .dropdown-item {
             padding: 14px 20px; text-decoration: none; color: #ccc !important; display: flex; 
-            justify-content: space-between; align-items: center; font-size: 0.8rem !important; transition: 0.2s;
+            justify-content: space-between; align-items: center; font-size: 0.75rem !important; transition: 0.2s;
             text-transform: none !important;
         }
         .dropdown-item:hover { background: #222; color: var(--accent-color) !important; }
         
         .beta-tag { 
-            font-size: 0.6rem; background: #333; color: #888; padding: 2px 5px; 
+            font-size: 0.55rem; background: #333; color: #888; padding: 2px 5px; 
             border-radius: 4px; text-transform: uppercase; font-weight: 800; margin-left: 10px;
         }
 
-        /* 身份验证显示 */
+        /* Authentication UI */
         #authSection { display: flex; align-items: center; }
         .auth-nav-btn {
             background: var(--accent-color); color: #000 !important; padding: 8px 22px;
             border-radius: 20px; font-weight: 700 !important; transition: 0.3s; text-decoration: none;
+            font-size: 0.8rem;
         }
         .auth-nav-btn:hover { background: #fff; transform: scale(1.05); }
 
-        .user-tag { display: flex; align-items: center; gap: 10px; color: var(--accent-color); font-weight: 700; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
-        .role-badge { font-size: 0.6rem; padding: 2px 6px; border: 1px solid var(--accent-color); border-radius: 4px; }
+        .user-tag { display: flex; align-items: center; gap: 10px; color: var(--accent-color); font-weight: 700; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; }
+        .role-badge { font-size: 0.55rem; padding: 2px 6px; border: 1px solid var(--accent-color); border-radius: 4px; }
         .logout-btn { 
-            color: #ff4d4d; font-size: 0.7rem; text-decoration: none; margin-left: 12px; 
+            color: #ff4d4d; font-size: 0.65rem; text-decoration: none; margin-left: 12px; 
             padding: 3px 8px; border: 1px solid #ff4d4d; border-radius: 4px; transition: 0.3s; 
         }
         .logout-btn:hover { background: #ff4d4d; color: #fff; }
 
-        /* --- 页面主体 --- */
+        /* --- Section Styling --- */
         section {
             height: 100vh; width: 100%;
             scroll-snap-align: start; scroll-snap-stop: always;
@@ -147,7 +163,6 @@
 
         .hero-container { display: flex; align-items: center; gap: 4rem; z-index: 2; }
 
-        /* 左侧：头像与标题 */
         .left-group { display: flex; align-items: center; gap: 3rem; }
         .avatar-wrapper { position: relative; width: 220px; height: 220px; cursor: pointer; }
         .avatar-outline { 
@@ -167,24 +182,21 @@
         .show-gif .face-gif { opacity: 1; }
 
         .title-group h1 { font-size: 5.5rem; font-weight: 900; letter-spacing: 10px; line-height: 1; }
-        .title-group .slogan { font-size: 1rem; margin-top: 10px; letter-spacing: 5px; color: rgba(255, 255, 255, 0.8); }
+        .title-group .slogan { font-size: 0.9rem; margin-top: 10px; letter-spacing: 5px; color: rgba(255, 255, 255, 0.8); }
 
-        /* 中间：分割线 */
         .divider-line { width: 5px; height: 180px; background: var(--accent-color); border-radius: 10px; box-shadow: 0 0 15px var(--accent-color); }
 
-        /* 右侧：简介 */
         .right-group { max-width: 450px; }
-        .bio-text { font-size: 1rem; line-height: 1.8; color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem; letter-spacing: 1px; }
+        .bio-text { font-size: 0.95rem; line-height: 1.8; color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem; letter-spacing: 1px; }
 
         .contact-box {
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 1rem 2.5rem; 
             border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.2); display: inline-flex; 
             align-items: center; gap: 1rem; color: #fff; text-decoration: none; transition: 0.4s; 
-            font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;
+            font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;
         }
         .contact-box:hover { background: var(--accent-color); color: #000; transform: translateY(-5px); border-color: var(--accent-color); }
 
-        /* --- 滚动指示器 --- */
         .scroll-indicator { 
             position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); 
             cursor: pointer; z-index: 10; text-align: center; 
@@ -198,7 +210,6 @@
             40% {transform: translateY(-15px) translateX(-50%);} 
         }
 
-        /* --- 第二屏布局 --- */
         .content-section { background: #050505; padding: 0 10%; display: flex; flex-direction: column; justify-content: center; gap: 3rem; }
         .content-text { max-width: 800px; }
         .content-text h2 { font-size: 3rem; margin-bottom: 1.5rem; color: var(--accent-color); letter-spacing: 5px; text-transform: uppercase; }
@@ -223,20 +234,20 @@
             </a>
             <ul class="nav-links">
                 <li><a href="index.html" style="color:var(--accent-color)">Home</a></li>
+                <li><a href="http://127.0.0.1:3000" class="server-btn" target="_blank"><i class="fas fa-server"></i> Server</a></li>
                 <li><a href="javascript:void(0)" onclick="checkAccess('idea.html')">Ideas</a></li> 
                 <li><a href="javascript:void(0)" onclick="checkAccess('ai.html')">AI Chat</a></li> 
                 <li class="dropdown">
                     <span class="nav-item">Agents <i class="fas fa-chevron-down" style="font-size:0.7rem; margin-left:4px;"></i></span>
-                    <div class="dropdown-content">
+                    <div class="dropdown-content" id="agentDropdown">
                         <a href="#" class="dropdown-item">Proteome Analyzer <span class="beta-tag">beta</span></a>
                         <a href="#" class="dropdown-item">Sequence Predictor <span class="beta-tag">beta</span></a>
                         <a href="#" class="dropdown-item">Paper Reviewer <span class="beta-tag">beta</span></a>
                         <div style="height:1px; background:#222; margin: 8px 15px;"></div>
-                        <a href="#" class="dropdown-item">Custom Agent <span class="beta-tag">beta</span></a>
-                    </div>
+                        </div>
                 </li>
                 <li><a href="javascript:void(0)" onclick="checkAccess('gallery.html')">Gallery</a></li> 
-                <li><a href="javascript:void(0)" onclick="checkAccess('schedule.html')">Schedules</a></li>
+                <li><a href="javascript:void(0)" onclick="checkAccess('Schedule/schedule.html')">Schedules</a></li>
                 <li id="authSection"></li>
             </ul>
         </nav>
@@ -286,54 +297,64 @@
         </div>
         <div class="content-image-full"></div>
         <div class="footer-tags">
-            <span><i class="fas fa-lock"></i> HASHED SECURITY</span>
-            <span><i class="fas fa-shield-alt"></i> ADMIN ONLY</span>
+            <span><i class="fas fa-lock"></i> CSV DATABASE</span>
+            <span><i class="fas fa-shield-alt"></i> NODE BACKEND</span>
             <span>EST. 2026</span>
         </div>
     </section>
 
     <script>
-        const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
-        const SB_KEY = 'YOUR_SUPABASE_KEY'; // 请确保填入有效 Key
-        const _supabase = supabase.createClient(SB_URL, SB_KEY);
-
-        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-
-        // 权限校验
+        // ==========================================
+        // 1. Session & Auth Logic
+        // ==========================================
         function checkAccess(targetUrl) {
             const userData = localStorage.getItem('lab_user');
             if (!userData) {
-                alert("ACCESS DENIED: Please sign in to view this sector.");
-                window.location.href = `login.html?from=${currentPath}`;
+                alert("ACCESS DENIED: Please sign in to access restricted terminal sectors.");
+                // 修改点：确保跳转到根目录下的 login.html
+                window.location.href = `login.html`;
             } else {
                 window.location.href = targetUrl;
             }
         }
 
-        // 渲染登录状态
         function renderAuth() {
             const userData = localStorage.getItem('lab_user');
             const authSection = document.getElementById('authSection');
             const accessStatus = document.getElementById('accessStatus');
+            const agentDropdown = document.getElementById('agentDropdown');
 
             if (userData) {
                 try {
                     const user = JSON.parse(userData);
-                    accessStatus.innerText = (user.role || 'USER').toUpperCase();
                     
-                    let badge = 'USER';
-                    if(user.role === 'total_admin') badge = 'TOTAL';
-                    else if(user.role === 'super_admin') badge = 'SUPER';
-                    else if(user.role === 'admin') badge = 'ADMIN';
-
+                    // Display Role on Bio
+                    accessStatus.innerText = user.role.replace('_', ' ').toUpperCase();
+                    
+                    // Display User Badge & Name in Navbar
+                    let badgeColor = (user.role && (user.role.includes('admin') || user.role.includes('boss'))) ? 'var(--accent-color)' : '#fff';
+                    
                     authSection.innerHTML = `
                         <div class="user-tag">
-                            <span class="role-badge">${badge}</span>
+                            <span class="role-badge" style="border-color:${badgeColor}; color:${badgeColor}">${user.role.replace('_', ' ').toUpperCase()}</span>
                             <span>${user.username.toUpperCase()}</span>
-                            <a href="javascript:void(0)" onclick="handleLogout()" class="logout-btn">Logout</a>
+                            <a href="javascript:void(0)" onclick="handleLogout()" class="logout-btn">LOGOUT</a>
                         </div>`;
+
+                    // If Developer/SuperAdmin, inject Admin Tool link
+                    if (user.role === 'developer' || user.role === 'super_admin') {
+                        // 检查是否已经添加过，避免重复
+                        if (!document.getElementById('devControlLink')) {
+                            const devLink = document.createElement('a');
+                            devLink.id = 'devControlLink';
+                            devLink.href = 'gen_admin.html';
+                            devLink.className = 'dropdown-item';
+                            devLink.innerHTML = '<span style="color:#ff0055">[ Dev Control ]</span> <span class="beta-tag">root</span>';
+                            agentDropdown.appendChild(devLink);
+                        }
+                    }
+
                 } catch (e) { 
-                    console.error(e);
                     showSignInBtn();
                 }
             } else {
@@ -342,36 +363,42 @@
         }
 
         function showSignInBtn() {
-            document.getElementById('authSection').innerHTML = `<a href="login.html?from=${currentPath}" class="auth-nav-btn">Sign In</a>`;
+            document.getElementById('authSection').innerHTML = `<a href="login.html" class="auth-nav-btn">Sign In</a>`;
         }
 
         function handleLogout() {
-            if(confirm("Confirm to terminate session?")) {
+            if(confirm("TERMINATE SESSION? Active protocols will be suspended.")) {
                 localStorage.removeItem('lab_user');
                 location.reload();
             }
         }
 
-        // 头像 GIF 切换逻辑
+        // ==========================================
+        // 2. Visual Interaction (Avatar GIF Switch)
+        // ==========================================
         const avatar = document.getElementById('avatarTrigger');
         const gifDuration = 2000;
         let startTime = 0, timeoutId = null, isHovering = false;
 
-        avatar.addEventListener('mouseenter', () => {
-            isHovering = true;
-            if (avatar.classList.contains('show-gif')) return;
-            startTime = Date.now();
-            avatar.classList.add('show-gif');
-        });
+        if(avatar) {
+            avatar.addEventListener('mouseenter', () => {
+                isHovering = true;
+                if (avatar.classList.contains('show-gif')) return;
+                startTime = Date.now();
+                avatar.classList.add('show-gif');
+            });
 
-        avatar.addEventListener('mouseleave', () => {
-            isHovering = false;
-            const remaining = gifDuration - ((Date.now() - startTime) % gifDuration);
-            if (timeoutId) clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                if (!isHovering) avatar.classList.remove('show-gif');
-            }, remaining);
-        });
+            avatar.addEventListener('mouseleave', () => {
+                isHovering = false;
+                const elapsed = Date.now() - startTime;
+                const remaining = gifDuration - (elapsed % gifDuration);
+                
+                if (timeoutId) clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    if (!isHovering) avatar.classList.remove('show-gif');
+                }, remaining);
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', renderAuth);
     </script>

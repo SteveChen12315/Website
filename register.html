@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>CREATE ACCOUNT</title>
+    <style>
+        :root { --accent: #00d2ff; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #0a0a0a; padding: 40px; border: 1px solid #1a1a1a; width: 380px; box-shadow: 0 0 30px rgba(0,0,0,1); }
+        h2 { text-align: center; letter-spacing: 3px; margin-bottom: 30px; color: var(--accent); }
+        .field { margin-bottom: 15px; }
+        label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: var(--accent); box-sizing: border-box; outline: none; }
+        .code-group { display: flex; gap: 10px; }
+        .btn-code { width: 130px; font-size: 11px; white-space: nowrap; background: none; border: 1px solid #444; color: #888; cursor: pointer; }
+        .btn-code:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+        button.main-btn { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--accent); color: var(--accent); font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button.main-btn:hover { background: var(--accent); color: #000; }
+        #msg { font-size: 12px; text-align: center; margin-top: 20px; color: #666; }
+        .back { text-align: center; margin-top: 20px; }
+        .back a { color: #444; text-decoration: none; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>REGISTER</h2>
+        <div class="field">
+            <label>Username (称呼)</label>
+            <input type="text" id="user" placeholder="Your Name">
+        </div>
+        <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="example@163.com">
+        </div>
+        <div class="field">
+            <label>Verify Code (5 Min)</label>
+            <div class="code-group">
+                <input type="text" id="code" placeholder="6-Digit">
+                <button class="btn-code" onclick="sendCode()">GET CODE</button>
+            </div>
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" id="pass" placeholder="Password">
+        </div>
+        <button class="main-btn" onclick="doRegister()">INITIALIZE ACCOUNT</button>
+        <div id="msg">AWAITING INPUT</div>
+        <div class="back"><a href="login.html">BACK TO LOGIN</a></div>
+    </div>
+    <script>
+        async function sendCode() {
+            const email = document.getElementById('email').value;
+            const user = document.getElementById('user').value;
+            const btn = document.querySelector('.btn-code');
+            if(!email.includes('@')) return alert("无效邮箱");
+            
+            btn.disabled = true;
+            try {
+                const res = await fetch('http://127.0.0.1:3000/api/send-code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, username: user })
+                });
+                const data = await res.json();
+                alert(data.message);
+                let time = 60;
+                const timer = setInterval(() => {
+                    btn.innerText = `${time--}s`;
+                    if(time < 0) { clearInterval(timer); btn.disabled = false; btn.innerText = "GET CODE"; }
+                }, 1000);
+            } catch(e) { btn.disabled = false; }
+        }
+
+        async function doRegister() {
+            const body = {
+                username: document.getElementById('user').value,
+                email: document.getElementById('email').value,
+                code: document.getElementById('code').value,
+                password: document.getElementById('pass').value
+            };
+            const res = await fetch('http://127.0.0.1:3000/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if(data.success) { location.href='login.html'; } else { alert(data.message); }
+        }
+    </script>
+</body>
+</html>

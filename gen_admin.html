@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON ADMIN PROTOCOL</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 25px; }
+        .box { border: 2px solid #0f0; padding: 25px; max-width: 1000px; margin: auto; box-shadow: 0 0 20px #0f0; }
+        input { background: #000; border: 1px solid #0f0; color: #0f0; padding: 12px; margin: 5px; width: 220px; outline: none; }
+        button { background: #0f0; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #fff; box-shadow: 0 0 10px #fff; }
+        #res-box { display: none; border: 2px dashed #00d2ff; background: #00151a; padding: 20px; margin: 20px 0; }
+        .token { color: #00d2ff; font-weight: bold; font-size: 1.2em; }
+        .plain-val { color: #fff; background: #333; padding: 3px 8px; border-radius: 4px; border: 1px solid #444; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { border: 1px solid #1a331a; padding: 15px; text-align: left; }
+        th { background: #0a1a0a; border-bottom: 2px solid #0f0; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>>> ACCESS TOKEN GENERATOR (STABLE)</h2>
+        <div>
+            <input type="password" id="dev" placeholder="Developer Key">
+            <input type="text" id="note" placeholder="审计备注">
+            <button onclick="gen()">GENERATE ACCESS</button>
+        </div>
+
+        <div id="res-box">
+            <h3 style="color:#00d2ff; margin-top:0">SUCCESS: CREDENTIALS CREATED</h3>
+            <p>ID: <span id="out_id" class="token"></span></p>
+            <p>PWD: <span id="out_pwd" class="token"></span> | SEC: <span id="out_sec" class="token"></span></p>
+        </div>
+
+        <h3>SYSTEM LOG (REAL-TIME VIEW)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Note</th>
+                    <th>Real Password</th>
+                    <th>Real Secret</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function load() {
+            try {
+                const res = await fetch('http://127.0.0.1:3000/api/temp-admins');
+                const data = await res.json();
+                document.getElementById('list').innerHTML = data.reverse().map(u => `
+                    <tr>
+                        <td style="color:#0f0">${u.id}</td>
+                        <td>${u.note}</td>
+                        <td><span class="plain-val">${u.realP}</span></td>
+                        <td><span class="plain-val">${u.realS}</span></td>
+                        <td style="color:${u.status ? '#f44':'#0f0'}">
+                            ${u.status ? '[ EXPIRED ]':'[ READY ]'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
+        }
+
+        async function gen() {
+            const res = await fetch('http://127.0.0.1:3000/api/generate-temp-admin', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    dev_pass: document.getElementById('dev').value, 
+                    note: document.getElementById('note').value 
+                })
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('res-box').style.display = 'block';
+                document.getElementById('out_id').innerText = data.credentials.id;
+                document.getElementById('out_pwd').innerText = data.credentials.pwd;
+                document.getElementById('out_sec').innerText = data.credentials.sec;
+                load();
+            } else { alert(data.message); }
+        }
+        window.onload = load;
+    </script>
+</body>
+</html>
