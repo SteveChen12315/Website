@@ -247,7 +247,7 @@
                         </div>
                 </li>
                 <li><a href="javascript:void(0)" onclick="checkAccess('gallery.html')">Gallery</a></li> 
-                <li><a href="javascript:void(0)" onclick="checkAccess('Schedule/schedule.html')">Schedules</a></li>
+                <li><a href="javascript:void(0)" onclick="checkAccess('schedule.html')">Schedules</a></li>
                 <li id="authSection"></li>
             </ul>
         </nav>
@@ -311,7 +311,6 @@
             const userData = localStorage.getItem('lab_user');
             if (!userData) {
                 alert("ACCESS DENIED: Please sign in to access restricted terminal sectors.");
-                // 修改点：确保跳转到根目录下的 login.html
                 window.location.href = `login.html`;
             } else {
                 window.location.href = targetUrl;
@@ -328,10 +327,8 @@
                 try {
                     const user = JSON.parse(userData);
                     
-                    // Display Role on Bio
                     accessStatus.innerText = user.role.replace('_', ' ').toUpperCase();
                     
-                    // Display User Badge & Name in Navbar
                     let badgeColor = (user.role && (user.role.includes('admin') || user.role.includes('boss'))) ? 'var(--accent-color)' : '#fff';
                     
                     authSection.innerHTML = `
@@ -341,9 +338,7 @@
                             <a href="javascript:void(0)" onclick="handleLogout()" class="logout-btn">LOGOUT</a>
                         </div>`;
 
-                    // If Developer/SuperAdmin, inject Admin Tool link
                     if (user.role === 'developer' || user.role === 'super_admin') {
-                        // 检查是否已经添加过，避免重复
                         if (!document.getElementById('devControlLink')) {
                             const devLink = document.createElement('a');
                             devLink.id = 'devControlLink';

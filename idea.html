@@ -4,231 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chuan | Idea Lab</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        :root { 
-            --primary: #00d2ff; 
-            --bg: #0a0a0a; 
-            --card: #151515; 
-            --border: #333; 
-            --text: #eee; 
-            --banner-ratio: 33.3%; 
-        }
-        
+        :root { --primary: #00d2ff; --bg: #0a0a0a; --card: #151515; --border: #333; --text: #eee; --banner-ratio: 33.3%; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding-top: 80px; }
-
-        /* --- Header --- */
-        header {
-            position: fixed; top: 0; width: 100%; height: 80px; z-index: 1000;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center;
-        }
+        
+        /* Header */
+        header { position: fixed; top: 0; width: 100%; height: 80px; z-index: 1000; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; }
         nav { max-width: 1200px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 3rem; }
         .logo-box { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; font-weight: 900; letter-spacing: 2px; }
         .logo-img { height: 35px; width: auto; filter: drop-shadow(0 0 8px var(--primary)); }
 
         .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        
-        /* --- Idea Banner (Using index/Idea.png) --- */
-        .static-banner {
-            width: 100%;
-            padding-top: var(--banner-ratio);
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 40px;
-            border: 1px solid var(--border);
-            background: url('index/Idea.png') no-repeat center center;
-            background-size: cover;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        }
-        .banner-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 60%);
-            display: flex;
-            align-items: flex-end;
-            padding: 25px 35px;
-        }
-        .banner-text { 
-            letter-spacing: 4px; color: var(--primary); font-weight: 900; font-size: 1.4rem; 
-            text-transform: uppercase; text-shadow: 0 0 15px rgba(0,210,255,0.6); 
-        }
+        .static-banner { width: 100%; padding-top: var(--banner-ratio); position: relative; border-radius: 20px; overflow: hidden; margin-bottom: 40px; border: 1px solid var(--border); background: url('index/Idea.png') no-repeat center center; background-size: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 60%); display: flex; align-items: flex-end; padding: 25px 35px; }
+        .banner-text { letter-spacing: 4px; color: var(--primary); font-weight: 900; font-size: 1.4rem; text-transform: uppercase; text-shadow: 0 0 15px rgba(0,210,255,0.6); }
 
-        /* --- Submission Form --- */
+        /* Form */
         .header-title { margin-bottom: 25px; border-left: 4px solid var(--primary); padding-left: 18px; }
-        .header-title h1 { font-size: 1.8rem; letter-spacing: 3px; font-weight: 800; color: #fff; }
-        .header-title p { color: #555; font-size: 0.85rem; margin-top: 5px; letter-spacing: 1px; }
-
-        .idea-form { 
-            background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--border); 
-            margin-bottom: 50px; box-shadow: 0 4px 25px rgba(0,0,0,0.4); 
-        }
-
-        input, textarea { 
-            width: 100%; background: #000; border: 1px solid var(--border); color: #fff; 
-            padding: 16px; border-radius: 12px; margin-bottom: 20px; outline: none; 
-            transition: 0.3s; font-size: 0.95rem; border-left: 2px solid transparent;
-        }
-        input:focus, textarea:focus { 
-            border-color: var(--primary); border-left: 2px solid var(--primary);
-            box-shadow: 0 0 15px rgba(0,210,255,0.05); 
-        }
+        .idea-form { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 50px; box-shadow: 0 4px 25px rgba(0,0,0,0.4); }
+        input[type="text"], textarea { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 16px; border-radius: 12px; margin-bottom: 20px; outline: none; transition: 0.3s; font-size: 0.95rem; }
         
-        .btn-send { 
-            background: var(--primary); color: #000; border: none; padding: 15px 45px; 
-            border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.4s; 
-            font-size: 0.95rem; display: flex; align-items: center; gap: 12px;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .btn-send:hover { 
-            transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,210,255,0.4); background: #fff;
-        }
+        #fileInput { display: none; }
+        .file-upload-label { display: inline-block; padding: 10px 20px; background: #222; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-size: 0.8rem; transition: 0.3s; }
+        .file-upload-label:hover { background: var(--primary); color: #000; }
 
-        /* --- Idea Cards --- */
-        .idea-card { 
-            background: var(--card); padding: 25px; border-radius: 18px; border: 1px solid var(--border); 
-            margin-bottom: 25px; position: relative; transition: 0.4s ease;
-        }
-        .idea-card:hover { 
-            border-color: var(--primary); transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .idea-card h3 { color: var(--primary); margin-bottom: 15px; font-size: 1.3rem; letter-spacing: 1px; }
-        .idea-card p { color: #ccc; line-height: 1.8; white-space: pre-wrap; font-size: 0.95rem; }
+        .btn-send { background: var(--primary); color: #000; border: none; padding: 15px 45px; border-radius: 10px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 12px; text-transform: uppercase; }
         
-        .idea-meta { 
-            margin-top: 20px; font-size: 0.75rem; color: #555; 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-top: 1px solid #222; padding-top: 18px; 
-        }
-        .meta-item { display: flex; align-items: center; gap: 8px; }
-        .delete-btn { 
-            color: #ff4d4d; cursor: pointer; opacity: 0; transition: 0.3s; 
-            padding: 6px 12px; border: 1px solid transparent; border-radius: 6px; 
-        }
-        .delete-btn:hover { background: rgba(255, 77, 77, 0.1); border-color: #ff4d4d; }
-        .idea-card:hover .delete-btn { opacity: 1; }
+        .idea-card { background: var(--card); padding: 25px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .idea-meta { font-size: 0.8rem; color: #666; margin-top: 15px; display: flex; justify-content: space-between; }
+        .delete-btn { color: #ff4d4d; cursor: pointer; font-weight: bold; }
+        
+        .md-content { color: #ccc; line-height: 1.6; }
+        .md-content img { max-width: 100%; }
     </style>
 </head>
 <body>
 
 <header>
     <nav>
-        <a href="index.html" class="logo-box">
-            <img src="index/Logo.png" class="logo-img">
-            <span>CHUAN</span>
-        </a>
+        <a href="index.html" class="logo-box"><img src="index/Logo.png" class="logo-img"><span>CHUAN</span></a>
         <div id="userInfo" style="font-size: 0.8rem; color: var(--primary); font-weight: bold;"></div>
     </nav>
 </header>
 
 <div class="container">
-    <div class="static-banner">
-        <div class="banner-overlay">
-            <div class="banner-text">Banana Idea Matrix</div>
-        </div>
-    </div>
-
-    <div class="header-title">
-        <h1>IDEA LAB</h1>
-        <p>SYNCHRONIZING INTELLECTUAL SPARKS...</p>
-    </div>
+    <div class="static-banner"><div class="banner-overlay"><div class="banner-text">Banana Idea Matrix</div></div></div>
+    <div class="header-title"><h1>IDEA LAB</h1><p>SYNCHRONIZING INTELLECTUAL SPARKS...</p></div>
 
     <div class="idea-form">
         <input type="text" id="ideaTitle" placeholder="Idea Title">
         <textarea id="ideaContent" rows="5" placeholder="Record your brilliant thoughts here..."></textarea>
+        
+        <label for="fileInput" class="file-upload-label"><i class="fas fa-paperclip"></i> ATTACH FILE</label>
+        <input type="file" id="fileInput" onchange="updateFileName(this)">
+        <span id="fileNameDisplay" style="margin-left:10px; font-size:0.8rem; color:#666;">No file selected</span>
+
         <button class="btn-send" onclick="submitIdea()">
             <i class="fas fa-bolt"></i> DEPLOY TO MATRIX
         </button>
     </div>
 
-    <div id="ideaList">
-        <p style="text-align: center; color: #333; padding: 40px;">INITIALIZING CLOUD DATA...</p>
-    </div>
+    <div id="ideaList"></div>
 </div>
 
 <script>
-    const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
-    const SB_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T'; 
-    const _supabase = supabase.createClient(SB_URL, SB_KEY);
-
-    const userData = JSON.parse(localStorage.getItem('lab_user'));
-    if (!userData) {
-        window.location.href = 'login.html';
-    } else {
-        document.getElementById('userInfo').innerText = `NODE_ID: ${userData.username.toUpperCase()}`;
+    const API_URL = 'http://localhost:3000/api/ideas';
+    const userStr = localStorage.getItem('lab_user');
+    const userData = userStr ? JSON.parse(userStr) : { username: 'Guest' };
+    document.getElementById('userInfo').innerText = userData.username;
+    
+    function updateFileName(input) {
+        document.getElementById('fileNameDisplay').innerText = input.files.length > 0 ? input.files[0].name : "No file selected";
     }
 
     async function submitIdea() {
-        const title = document.getElementById('ideaTitle').value.trim();
-        const content = document.getElementById('ideaContent').value.trim();
+        const formData = new FormData();
+        formData.append('title', document.getElementById('ideaTitle').value);
+        formData.append('content', document.getElementById('ideaContent').value);
+        formData.append('user_name', userData.username);
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
 
-        if (!title) return alert("Title is required!");
-
-        try {
-            const { error } = await _supabase.from('ideas').insert([{
-                title: title,
-                content: content,
-                user_id: userData.username, 
-                user_name: userData.username
-            }]);
-
-            if (error) throw error;
-
-            document.getElementById('ideaTitle').value = "";
-            document.getElementById('ideaContent').value = "";
-            fetchIdeas();
-        } catch (err) {
-            console.error(err);
-            alert("Sync Failed: " + (err.message || "Check your Supabase Table schema."));
-        }
+        await fetch(API_URL, { method: 'POST', body: formData });
+        location.reload();
     }
 
     async function fetchIdeas() {
-        try {
-            const { data, error } = await _supabase
-                .from('ideas')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            const listDiv = document.getElementById('ideaList');
-            if (!data || data.length === 0) {
-                listDiv.innerHTML = '<p style="text-align:center; color:#444; padding:20px;">Matrix Empty. Awaiting input...</p>';
-                return;
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        
+        document.getElementById('ideaList').innerHTML = data.map(item => {
+            let mediaHtml = '';
+            if (item.media_url) {
+                // 确保路径中的所有反斜杠统一为正斜杠，以兼容跨平台后端
+                const normalizedPath = item.media_url.replace(/\\/g, '/');
+                const fileUrl = `http://localhost:3000/Idea/${normalizedPath}`;
+                const ext = normalizedPath.split('.').pop().toLowerCase();
+                
+                if (['jpg', 'png', 'gif', 'webp'].includes(ext)) {
+                    mediaHtml = `<img src="${fileUrl}" style="max-width:100%; border-radius:10px; margin:15px 0;">`;
+                } else if (['mp4', 'webm'].includes(ext)) {
+                    mediaHtml = `<video src="${fileUrl}" controls style="width:100%; margin:15px 0; border-radius:10px;"></video>`;
+                } else if (ext === 'md') {
+                    mediaHtml = `<div class="md-content" data-url="${fileUrl}" style="margin:15px 0; padding:15px; border:1px solid #333; border-radius:10px;">Loading Markdown...</div>`;
+                }
             }
 
-            listDiv.innerHTML = data.map(item => `
+            return `
                 <div class="idea-card">
                     <h3>${item.title}</h3>
-                    <p>${item.content || 'N/A'}</p>
+                    <p>${item.content}</p>
+                    ${mediaHtml}
                     <div class="idea-meta">
-                        <div class="meta-item">
-                            <span><i class="far fa-clock"></i> ${new Date(item.created_at).toLocaleString()}</span>
-                            <span style="margin-left:20px;"><i class="fas fa-fingerprint"></i> ${item.user_name}</span>
-                        </div>
-                        ${item.user_id === userData.username ? `
-                            <span class="delete-btn" onclick="deleteIdea('${item.id}')">
-                                <i class="fas fa-trash-alt"></i> REMOVE
-                            </span>` : ''}
+                        <span>${item.created_at} | ${item.user_name}</span>
+                        <span class="delete-btn" onclick="deleteIdea('${item.id}')">REMOVE</span>
                     </div>
                 </div>
-            `).join('');
-        } catch (err) {
-            console.error(err);
-        }
+            `;
+        }).join('');
+
+        // 异步渲染 Markdown
+        document.querySelectorAll('.md-content').forEach(async (el) => {
+            try {
+                const response = await fetch(el.dataset.url);
+                const mdText = await response.text();
+                el.innerHTML = marked.parse(mdText);
+            } catch(e) { el.innerHTML = "Failed to load Markdown."; }
+        });
     }
 
     async function deleteIdea(id) {
-        if (!confirm("Remove from Matrix permanently?")) return;
-        const { error } = await _supabase.from('ideas').delete().eq('id', id);
-        if (!error) fetchIdeas();
+        if(!confirm("Remove from Matrix?")) return;
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        fetchIdeas();
     }
-
+    
     fetchIdeas();
 </script>
 </body>

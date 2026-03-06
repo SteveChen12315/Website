@@ -3,58 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Chuan | Schedule</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #00d2ff; --bg: #0a0a0a; --card: #151515; --border: #333; --text: #eee; }
         * { box-sizing: border-box; }
-        
-        body { 
-            background: var(--bg); color: var(--text); 
-            font-family: 'PingFang SC', -apple-system, sans-serif; 
-            margin: 0; display: flex; height: 100vh; overflow: hidden; 
-        }
-
+        body { background: var(--bg); color: var(--text); font-family: 'PingFang SC', -apple-system, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         #sideList::-webkit-scrollbar, .main-scroll-area::-webkit-scrollbar { width: 5px; }
         #sideList::-webkit-scrollbar-track, .main-scroll-area::-webkit-scrollbar-track { background: transparent; }
         #sideList::-webkit-scrollbar-thumb, .main-scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-
         .main-view { flex: 1; display: flex; flex-direction: column; padding: 20px; min-width: 0; }
         .side-panel { width: 380px; background: var(--card); border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
-        
-        .toolbar { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 20px; background: var(--card); padding: 12px 20px; 
-            border-radius: 12px; border: 1px solid var(--border); flex-shrink: 0;
-        }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border); flex-shrink: 0; }
         .user-info-group { display: flex; align-items: center; gap: 20px; }
         .user-tag { color: var(--primary); font-weight: bold; font-size: 0.9rem; }
         .btn-home-link { color: #888; text-decoration: none; font-size: 0.85rem; transition: 0.3s; display: flex; align-items: center; gap: 5px; }
         .btn-home-link:hover { color: var(--primary); }
-
         #mainDisplay { flex: 1; background: var(--card); border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
         .main-scroll-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-
         .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #111; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
         .header-cell { padding: 12px; text-align: center; font-size: 0.8rem; color: #777; font-weight: bold; }
-        
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); flex: 1; }
         .day-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; cursor: pointer; display: flex; flex-direction: column; min-height: 120px; transition: 0.2s; }
         .day-cell:hover { background: #1c1c1c; }
         .day-num { font-size: 0.8rem; margin-bottom: 6px; color: #555; }
         .is-today { background: rgba(0, 210, 255, 0.05); }
         .is-today .day-num { color: var(--primary); font-weight: bold; }
-
         .event-item { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid rgba(255,255,255,0.3); color: #fff; }
         .event-item b { opacity: 0.8; margin-right: 4px; font-weight: 500; }
-
         .side-title { font-size: 1.1rem; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         #sideList { flex: 1; overflow-y: auto; padding-right: 5px; }
         .task-card { background: #1a1a1a; padding: 16px; border-radius: 10px; margin-bottom: 15px; position: relative; border: 1px solid #222; }
         .task-card h4 { margin: 0 0 8px 0; font-size: 0.95rem; color: #fff; }
         .task-card p { margin: 0; font-size: 0.75rem; color: #888; font-family: monospace; }
         .edit-icon { position: absolute; right: 15px; top: 15px; color: var(--primary); cursor: pointer; opacity: 0.5; }
-
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: none; backdrop-filter: blur(8px); }
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #181818; padding: 30px; border-radius: 16px; width: 420px; z-index: 101; display: none; border: 1px solid #333; }
         input, select { width: 100%; padding: 12px; margin-top: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; outline: none; }
@@ -67,7 +48,7 @@
 <div class="main-view">
     <div class="toolbar">
         <div class="user-info-group">
-            <a href="index.html" class="btn-home-link"><i class="fas fa-arrow-left"></i> Home</a>
+            <a href="../index.html" class="btn-home-link"><i class="fas fa-arrow-left"></i> Home</a>
             <div class="user-tag" id="userDisplay">Guest Mode (Read Only)</div>
         </div>
         
@@ -109,9 +90,8 @@
 </div>
 
 <script>
-    const SB_URL = 'https://bwbmnaobukcjatwevcqm.supabase.co';
-    const SB_KEY = 'sb_publishable_2Pt8kRnWJCI17rA7CGgjyA_lsIhFE4T';
-    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    // 核心修改：统一指向根目录运行的 3000 端口服务
+    const API_BASE = 'http://127.0.0.1:3000/api/schedules';
     const user = JSON.parse(localStorage.getItem('lab_user'));
     
     const ADMIN_NAMES = ['Chen', 'Admin', 'Admin1', 'Admin2', 'Admin3'];
@@ -156,9 +136,13 @@
     }
 
     async function loadEvents() {
-        const { data } = await _supabase.from('schedules').select('*');
-        events = data || [];
-        renderSide();
+        try {
+            const res = await fetch(API_BASE);
+            events = await res.json();
+            renderSide();
+        } catch (e) {
+            console.error("Fetch failed", e);
+        }
     }
 
     function fillTimeDropdowns() {
@@ -268,30 +252,46 @@
         const date = document.getElementById('eventDate').value;
         const st = document.getElementById('startTime').value, et = document.getElementById('endTime').value;
         if(!content) return alert("Please enter a description.");
-        const payload = { user_name: user.username, content, start_time: `${date}T${st}`, end_time: `${date}T${et}` };
-        if(activeId) await _supabase.from('schedules').update(payload).eq('id', activeId);
-        else await _supabase.from('schedules').insert([payload]);
-        closeModal(); await loadEvents(); render();
+        
+        const payload = { 
+            id: activeId, 
+            user_name: user.username, 
+            content, 
+            start_time: `${date}T${st}`, 
+            end_time: `${date}T${et}` 
+        };
+
+        const res = await fetch(API_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if(res.ok) {
+            closeModal(); await loadEvents(); render();
+        }
     }
 
     async function deleteEvent() {
         if(confirm("Confirm deletion?")) {
-            await _supabase.from('schedules').delete().eq('id', activeId);
-            closeModal(); await loadEvents(); render();
+            const res = await fetch(`${API_BASE}/${activeId}?user_name=${user.username}`, {
+                method: 'DELETE'
+            });
+            if(res.ok) {
+                closeModal(); await loadEvents(); render();
+            }
         }
     }
 
     function closeModal() { document.getElementById('overlay').style.display = 'none'; document.getElementById('modal').style.display = 'none'; }
     function moveDate(s) { focusDate.setMonth(focusDate.getMonth() + s); render(); }
     
-    // --- SMART AUTH HANDLER ---
     function handleAuth() { 
         if(user) { 
             localStorage.removeItem('lab_user'); 
             location.reload(); 
         } else { 
-            const currentPath = window.location.pathname.split('/').pop();
-            location.href = `login.html?from=${currentPath}`; 
+            location.href = '../login.html'; 
         } 
     }
 
